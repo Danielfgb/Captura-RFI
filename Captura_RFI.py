@@ -37,7 +37,6 @@ from gnuradio import eng_notation
 from gnuradio import uhd
 import time
 import epy_block_0
-import epy_block_2
 import epy_block_3
 
 from gnuradio import qtgui
@@ -78,10 +77,10 @@ class Captura_RFI(gr.top_block, Qt.QWidget):
         ##################################################
         # Variables
         ##################################################
-        self.samp_rate_0 = samp_rate_0 = 2000000
+        self.samp_rate_0 = samp_rate_0 = 20000000
         self.frec_total = frec_total = 0
         self.frec_inicial = frec_inicial = 80000000
-        self.Frec_center = Frec_center = 115000000
+        self.frec_final = frec_final = 120000000
 
         ##################################################
         # Blocks
@@ -172,7 +171,7 @@ class Captura_RFI(gr.top_block, Qt.QWidget):
         self.qtgui_freq_sink_x_0 = qtgui.freq_sink_c(
             1024, #size
             firdes.WIN_BLACKMAN_hARRIS, #wintype
-            Frec_center, #fc
+            0, #fc
             samp_rate_0, #bw
             "", #name
             1
@@ -210,9 +209,8 @@ class Captura_RFI(gr.top_block, Qt.QWidget):
         self._qtgui_freq_sink_x_0_win = sip.wrapinstance(self.qtgui_freq_sink_x_0.pyqwidget(), Qt.QWidget)
         self.top_grid_layout.addWidget(self._qtgui_freq_sink_x_0_win)
         self.fft_vxx_0 = fft.fft_vcc(1024, True, window.blackmanharris(1024), True, 1)
-        self.epy_block_3 = epy_block_3.blk(frec_inicial=frec_inicial, frec_final=200000000, intervalo_tiempo=6, ancho_banda=20000000)
-        self.epy_block_2 = epy_block_2.CSVWriterAndPlotBlock(filename=r"C:\Users\dfgom\OneDrive\Escritorio\USRP\RFI_Captura\Salida\Salidapp.csv", central_frequency=115000000, bandwidth=samp_rate_0, image_filename=r"C:\Users\dfgom\OneDrive\Escritorio\USRP\RFI_Captura\Salida\OutputPLOT.png")
-        self.epy_block_0 = epy_block_0.blk(filename=r"C:\Users\dfgom\OneDrive\Escritorio\USRP\RFI_Captura\Salida\outputpru.csv")
+        self.epy_block_3 = epy_block_3.blk(frec_inicial=frec_inicial, frec_final=frec_final, intervalo_tiempo=6, ancho_banda=samp_rate_0)
+        self.epy_block_0 = epy_block_0.CSVWriterBlock(filename=r"C:\Users\dfgom\OneDrive\Escritorio\USRP\RFI_Captura\Salida\outputprueba2.csv")
         self.blocks_stream_to_vector_0 = blocks.stream_to_vector(gr.sizeof_gr_complex*1, 1024)
         self.blocks_nlog10_ff_0 = blocks.nlog10_ff(10, 1024, 0)
         self.blocks_multiply_const_xx_0 = blocks.multiply_const_cc(0.000976562, 1024)
@@ -229,7 +227,6 @@ class Captura_RFI(gr.top_block, Qt.QWidget):
         self.connect((self.blocks_complex_to_mag_squared_0, 0), (self.blocks_nlog10_ff_0, 0))
         self.connect((self.blocks_multiply_const_xx_0, 0), (self.blocks_complex_to_mag_squared_0, 0))
         self.connect((self.blocks_nlog10_ff_0, 0), (self.epy_block_0, 0))
-        self.connect((self.blocks_nlog10_ff_0, 0), (self.epy_block_2, 0))
         self.connect((self.blocks_nlog10_ff_0, 0), (self.qtgui_vector_sink_f_0, 0))
         self.connect((self.blocks_stream_to_vector_0, 0), (self.fft_vxx_0, 0))
         self.connect((self.fft_vxx_0, 0), (self.blocks_multiply_const_xx_0, 0))
@@ -248,8 +245,7 @@ class Captura_RFI(gr.top_block, Qt.QWidget):
 
     def set_samp_rate_0(self, samp_rate_0):
         self.samp_rate_0 = samp_rate_0
-        self.epy_block_2.bandwidth = self.samp_rate_0
-        self.qtgui_freq_sink_x_0.set_frequency_range(self.Frec_center, self.samp_rate_0)
+        self.qtgui_freq_sink_x_0.set_frequency_range(0, self.samp_rate_0)
         self.qtgui_waterfall_sink_x_0.set_frequency_range(self.frec_total, self.samp_rate_0)
         self.uhd_usrp_source_1.set_samp_rate(self.samp_rate_0)
 
@@ -268,12 +264,12 @@ class Captura_RFI(gr.top_block, Qt.QWidget):
         self.frec_inicial = frec_inicial
         self.epy_block_3.frec_inicial = self.frec_inicial
 
-    def get_Frec_center(self):
-        return self.Frec_center
+    def get_frec_final(self):
+        return self.frec_final
 
-    def set_Frec_center(self, Frec_center):
-        self.Frec_center = Frec_center
-        self.qtgui_freq_sink_x_0.set_frequency_range(self.Frec_center, self.samp_rate_0)
+    def set_frec_final(self, frec_final):
+        self.frec_final = frec_final
+        self.epy_block_3.frec_final = self.frec_final
 
 
 

@@ -6,7 +6,7 @@ import pmt
 class blk(gr.sync_block):
     """sending asynchronous messages"""
 
-    def __init__(self, frec_inicial=100e6, frec_final=200e6, intervalo_tiempo=4, ancho_banda=10e6):
+    def __init__(self, frec_inicial=100e6, frec_final=200e6, intervalo_tiempo=4, ancho_banda=20e6):
         
         gr.sync_block.__init__(
             self,
@@ -16,6 +16,10 @@ class blk(gr.sync_block):
         )
 
         # DECLARA LAS VARIABLES INICIALES 
+
+        self.Val_frec = True
+
+        self.frec_cambio = frec_inicial
         self.frec_inicial = frec_inicial
         self.frec_final = frec_final
         self.intervalo_tiempo = intervalo_tiempo
@@ -30,12 +34,17 @@ class blk(gr.sync_block):
 
     def send_message(self):
 
+        if self.Val_frec:                      
+            self.frec_cambio = self.frec_inicial
+            self.Val_frec = False
+
         # Calcula el nuevo valor de frecuencia
         self.frec_inicial += self.intervalo_cambio
 
         # Si la frecuencia supera el valor final, vuelve a iniciar desde el valor inicial
         if self.frec_inicial >= self.frec_final:
-            self.frec_inicial = self.frec_inicial
+            self.frec_inicial = self.frec_cambio
+            self.Val_frec = True
 
         # Crear el diccionario freq_msg
         freq_msg = {'freq': self.frec_inicial}
