@@ -32,8 +32,6 @@ class blk(gr.sync_block):
         self.msg_thread = MsgSenderThread(self)
         self.msg_thread.start()
 
-
-
     def send_message(self):
 
         if self.Val_frec:                      
@@ -54,37 +52,6 @@ class blk(gr.sync_block):
         if (self.frec_inicial) >= (self.frec_final):
             self.frec_inicial = self.frec_cambio
             self.Val_frec = True
-
-
-    # def send_message(self):
-
-    #     # Crear el diccionario freq_msg
-    #     freq_msg = {'freq': self.frec_inicial}
-
-    #     # Enviar freq_msg como un mensaje asincrónico
-    #     msg = pmt.to_pmt(freq_msg)
-    #     self.message_port_pub(pmt.intern("Frec_out"), msg)
-
-    #     if self.Val_frec:                      
-    #         self.frec_cambio = self.frec_inicial
-    #         self.Val_frec = False
-
-    #     # Calcula el nuevo valor de frecuencia
-    #     self.frec_inicial += self.intervalo_cambio       
-
-    #     # Si la frecuencia supera el valor final, vuelve a iniciar desde el valor inicial
-    #     if (self.frec_inicial) >= (self.frec_final):
-    #         self.frec_inicial = self.frec_cambio
-    #         self.Val_frec = True
-
-    #     # Crear el diccionario freq_msg
-    #     freq_msg = {'freq': self.frec_inicial}
-
-    #     # Enviar freq_msg como un mensaje asincrónico
-    #     msg = pmt.to_pmt(freq_msg)
-    #     self.message_port_pub(pmt.intern("Frec_out"), msg)
-
-    #     return (self.frec_inicial)
 
     def stop(self):
         self.msg_thread.stop()

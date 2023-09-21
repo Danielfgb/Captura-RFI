@@ -382,23 +382,9 @@ blocks:
       \  self.frec_inicial += self.intervalo_cambio       \n\n        # Si la frecuencia\
       \ supera el valor final, vuelve a iniciar desde el valor inicial\n        if\
       \ (self.frec_inicial) >= (self.frec_final):\n            self.frec_inicial =\
-      \ self.frec_cambio\n            self.Val_frec = True\n\n\n    # def send_message(self):\n\
-      \n    #     # Crear el diccionario freq_msg\n    #     freq_msg = {'freq': self.frec_inicial}\n\
-      \n    #     # Enviar freq_msg como un mensaje asincr\xF3nico\n    #     msg\
-      \ = pmt.to_pmt(freq_msg)\n    #     self.message_port_pub(pmt.intern(\"Frec_out\"\
-      ), msg)\n\n    #     if self.Val_frec:                      \n    #        \
-      \ self.frec_cambio = self.frec_inicial\n    #         self.Val_frec = False\n\
-      \n    #     # Calcula el nuevo valor de frecuencia\n    #     self.frec_inicial\
-      \ += self.intervalo_cambio       \n\n    #     # Si la frecuencia supera el\
-      \ valor final, vuelve a iniciar desde el valor inicial\n    #     if (self.frec_inicial)\
-      \ >= (self.frec_final):\n    #         self.frec_inicial = self.frec_cambio\n\
-      \    #         self.Val_frec = True\n\n    #     # Crear el diccionario freq_msg\n\
-      \    #     freq_msg = {'freq': self.frec_inicial}\n\n    #     # Enviar freq_msg\
-      \ como un mensaje asincr\xF3nico\n    #     msg = pmt.to_pmt(freq_msg)\n   \
-      \ #     self.message_port_pub(pmt.intern(\"Frec_out\"), msg)\n\n    #     return\
-      \ (self.frec_inicial)\n\n    def stop(self):\n        self.msg_thread.stop()\n\
-      \        self.msg_thread = None\n\n    def msg_handler(self, msg):\n       \
-      \ if pmt.is_eq(msg, pmt.intern(\"msg_send\")):\n            self.send_message()\n\
+      \ self.frec_cambio\n            self.Val_frec = True\n\n    def stop(self):\n\
+      \        self.msg_thread.stop()\n        self.msg_thread = None\n\n    def msg_handler(self,\
+      \ msg):\n        if pmt.is_eq(msg, pmt.intern(\"msg_send\")):\n            self.send_message()\n\
       \nclass MsgSenderThread(gr.threading.Thread):\n    def __init__(self, block):\n\
       \        gr.threading.Thread.__init__(self)\n        self.block = block\n  \
       \      self.running = True\n\n    def stop(self):\n        self.running = False\n\
