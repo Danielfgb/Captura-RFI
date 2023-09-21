@@ -93,7 +93,7 @@ class Captura_RFI(gr.top_block, Qt.QWidget):
                 channels=list(range(0,1)),
             ),
         )
-        self.uhd_usrp_source_1.set_center_freq(frec_inicial, 0)
+        self.uhd_usrp_source_1.set_center_freq(0, 0)
         self.uhd_usrp_source_1.set_gain(0, 0)
         self.uhd_usrp_source_1.set_antenna('RX2', 0)
         self.uhd_usrp_source_1.set_samp_rate(samp_rate_0)
@@ -176,7 +176,7 @@ class Captura_RFI(gr.top_block, Qt.QWidget):
         self._qtgui_freq_sink_x_0_win = sip.wrapinstance(self.qtgui_freq_sink_x_0.pyqwidget(), Qt.QWidget)
         self.top_grid_layout.addWidget(self._qtgui_freq_sink_x_0_win)
         self.fft_vxx_0 = fft.fft_vcc(1024, True, window.blackmanharris(1024), True, 1)
-        self.epy_block_3 = epy_block_3.blk(frec_inicial=frec_inicial, frec_final=frec_final, intervalo_tiempo=6, ancho_banda=samp_rate_0)
+        self.epy_block_3 = epy_block_3.blk(frec_inicial=frec_inicial, frec_final=frec_final, intervalo_tiempo=10, ancho_banda=samp_rate_0)
         self.epy_block_0 = epy_block_0.CSVWriterBlock(filename=r"C:\Users\dfgom\OneDrive\Escritorio\USRP\RFI_Captura\Salida\outputprueba2.csv")
         self.blocks_stream_to_vector_0 = blocks.stream_to_vector(gr.sizeof_gr_complex*1, 1024)
         self.blocks_nlog10_ff_0 = blocks.nlog10_ff(10, 1024, 0)
@@ -230,7 +230,6 @@ class Captura_RFI(gr.top_block, Qt.QWidget):
     def set_frec_inicial(self, frec_inicial):
         self.frec_inicial = frec_inicial
         self.epy_block_3.frec_inicial = self.frec_inicial
-        self.uhd_usrp_source_1.set_center_freq(self.frec_inicial, 0)
 
     def get_frec_final(self):
         return self.frec_final

@@ -205,21 +205,7 @@ blocks:
 - name: epy_block_0
   id: epy_block
   parameters:
-    _source_code: "\r\n# import numpy as np\r\n# from gnuradio import gr\r\n\r\n#\
-      \ class blk(gr.sync_block):\r\n#     \"\"\"Embedded Python Block example - guarda\
-      \ datos en archivo CSV\"\"\"\r\n\r\n#     def __init__(self, filename=\"output.csv\"\
-      ):\r\n#         \"\"\"arguments to this function show up as parameters in GRC\"\
-      \"\"\r\n#         gr.sync_block.__init__(\r\n#             self,\r\n#      \
-      \       name='Embedded Python Block',  # will show up in GRC\r\n#          \
-      \   in_sig=[(np.float32, 1024)],\r\n#             out_sig=None  # no output\r\
-      \n#         )\r\n#         self.filename = filename\r\n#         self.data =\
-      \ []  # Lista para almacenar los datos recibidos\r\n\r\n#     def work(self,\
-      \ input_items, output_items):\r\n#         \"\"\"Guarda los datos recibidos\
-      \ en la lista data\"\"\"\r\n#         self.data.extend(input_items[0])\r\n#\
-      \         return len(input_items[0])\r\n\r\n#     def stop(self):\r\n#     \
-      \    \"\"\"Al detener el flujo, guarda los datos en el archivo CSV\"\"\"\r\n\
-      #         np.savetxt(self.filename, self.data, delimiter=',')\r\n#         return\
-      \ True\r\n\r\n###################################################################################################\r\
+    _source_code: "###################################################################################################\r\
       \n\r\n# import numpy as np\r\n# import csv\r\n# from gnuradio import gr\r\n\r\
       \n# class CSVWriterBlock(gr.sync_block):\r\n#     def __init__(self, filename=\"\
       output.csv\"):\r\n#         gr.sync_block.__init__(\r\n#             self,\r\
@@ -383,34 +369,48 @@ blocks:
       \ == frec_final) = Frec_Fn = Frec_I1\n\n        self.Val_frec = True\n\n   \
       \     self.frec_inicial = (frec_inicial) + (ancho_banda/2)\n        self.frec_final\
       \ = frec_final\n        self.intervalo_tiempo = intervalo_tiempo\n        self.intervalo_cambio\
-      \ = ancho_banda\n\n        self.frec_cambio = (frec_inicial) + (ancho_banda/2)\n\
+      \ = ancho_banda\n        self.frec_cambio = (frec_inicial) + (ancho_banda/2)\n\
       \n        # Configurar el puerto de mensajes\n        self.message_port_register_out(pmt.intern(\"\
       Frec_out\"))\n\n        # Iniciar el hilo del remitente del mensaje\n      \
       \  self.msg_thread = MsgSenderThread(self)\n        self.msg_thread.start()\n\
-      \n    def send_message(self):\n\n        if self.Val_frec:                 \
-      \     \n            self.frec_cambio = self.frec_inicial\n            self.Val_frec\
-      \ = False\n\n        # Calcula el nuevo valor de frecuencia\n        self.frec_inicial\
-      \ += self.intervalo_cambio       \n\n        # Si la frecuencia supera el valor\
-      \ final, vuelve a iniciar desde el valor inicial\n        if (self.frec_inicial)\
-      \ >= (self.frec_final):\n            self.frec_inicial = self.frec_cambio\n\
-      \            self.Val_frec = True\n\n        # Crear el diccionario freq_msg\n\
-      \        freq_msg = {'freq': self.frec_inicial}\n\n        # Enviar freq_msg\
-      \ como un mensaje asincr\xF3nico\n        msg = pmt.to_pmt(freq_msg)\n     \
-      \   self.message_port_pub(pmt.intern(\"Frec_out\"), msg)\n\n        return (self.frec_inicial)\n\
-      \n    def stop(self):\n        self.msg_thread.stop()\n        self.msg_thread\
-      \ = None\n\n    def msg_handler(self, msg):\n        if pmt.is_eq(msg, pmt.intern(\"\
-      msg_send\")):\n            self.send_message()\n\nclass MsgSenderThread(gr.threading.Thread):\n\
-      \    def __init__(self, block):\n        gr.threading.Thread.__init__(self)\n\
-      \        self.block = block\n        self.running = True\n\n    def stop(self):\n\
-      \        self.running = False\n\n    def run(self):\n        while self.running:\n\
-      \            time.sleep(self.block.intervalo_tiempo)\n            self.block.send_message()"
+      \n\n\n    def send_message(self):\n\n        if self.Val_frec:             \
+      \         \n            self.frec_cambio = self.frec_inicial\n            self.Val_frec\
+      \ = False\n\n        # Crear el diccionario freq_msg\n        freq_msg = {'freq':\
+      \ self.frec_inicial}\n\n        # Enviar freq_msg como un mensaje asincr\xF3\
+      nico\n        msg = pmt.to_pmt(freq_msg)\n        self.message_port_pub(pmt.intern(\"\
+      Frec_out\"), msg)\n\n        # Calcula el nuevo valor de frecuencia\n      \
+      \  self.frec_inicial += self.intervalo_cambio       \n\n        # Si la frecuencia\
+      \ supera el valor final, vuelve a iniciar desde el valor inicial\n        if\
+      \ (self.frec_inicial) >= (self.frec_final):\n            self.frec_inicial =\
+      \ self.frec_cambio\n            self.Val_frec = True\n\n\n    # def send_message(self):\n\
+      \n    #     # Crear el diccionario freq_msg\n    #     freq_msg = {'freq': self.frec_inicial}\n\
+      \n    #     # Enviar freq_msg como un mensaje asincr\xF3nico\n    #     msg\
+      \ = pmt.to_pmt(freq_msg)\n    #     self.message_port_pub(pmt.intern(\"Frec_out\"\
+      ), msg)\n\n    #     if self.Val_frec:                      \n    #        \
+      \ self.frec_cambio = self.frec_inicial\n    #         self.Val_frec = False\n\
+      \n    #     # Calcula el nuevo valor de frecuencia\n    #     self.frec_inicial\
+      \ += self.intervalo_cambio       \n\n    #     # Si la frecuencia supera el\
+      \ valor final, vuelve a iniciar desde el valor inicial\n    #     if (self.frec_inicial)\
+      \ >= (self.frec_final):\n    #         self.frec_inicial = self.frec_cambio\n\
+      \    #         self.Val_frec = True\n\n    #     # Crear el diccionario freq_msg\n\
+      \    #     freq_msg = {'freq': self.frec_inicial}\n\n    #     # Enviar freq_msg\
+      \ como un mensaje asincr\xF3nico\n    #     msg = pmt.to_pmt(freq_msg)\n   \
+      \ #     self.message_port_pub(pmt.intern(\"Frec_out\"), msg)\n\n    #     return\
+      \ (self.frec_inicial)\n\n    def stop(self):\n        self.msg_thread.stop()\n\
+      \        self.msg_thread = None\n\n    def msg_handler(self, msg):\n       \
+      \ if pmt.is_eq(msg, pmt.intern(\"msg_send\")):\n            self.send_message()\n\
+      \nclass MsgSenderThread(gr.threading.Thread):\n    def __init__(self, block):\n\
+      \        gr.threading.Thread.__init__(self)\n        self.block = block\n  \
+      \      self.running = True\n\n    def stop(self):\n        self.running = False\n\
+      \n    def run(self):\n        while self.running:\n            time.sleep(self.block.intervalo_tiempo)\n\
+      \            self.block.send_message()"
     affinity: ''
     alias: ''
     ancho_banda: samp_rate_0
     comment: ''
     frec_final: frec_final
     frec_inicial: frec_inicial
-    intervalo_tiempo: '6'
+    intervalo_tiempo: '10'
     maxoutbuf: '0'
     minoutbuf: '0'
   states:
@@ -728,7 +728,7 @@ blocks:
     bw7: '0'
     bw8: '0'
     bw9: '0'
-    center_freq0: frec_inicial
+    center_freq0: '0'
     center_freq1: '0'
     center_freq10: '0'
     center_freq11: '0'

@@ -23,7 +23,6 @@ class blk(gr.sync_block):
         self.frec_final = frec_final
         self.intervalo_tiempo = intervalo_tiempo
         self.intervalo_cambio = ancho_banda
-
         self.frec_cambio = (frec_inicial) + (ancho_banda/2)
 
         # Configurar el puerto de mensajes
@@ -33,11 +32,20 @@ class blk(gr.sync_block):
         self.msg_thread = MsgSenderThread(self)
         self.msg_thread.start()
 
+
+
     def send_message(self):
 
         if self.Val_frec:                      
             self.frec_cambio = self.frec_inicial
             self.Val_frec = False
+
+        # Crear el diccionario freq_msg
+        freq_msg = {'freq': self.frec_inicial}
+
+        # Enviar freq_msg como un mensaje asincrónico
+        msg = pmt.to_pmt(freq_msg)
+        self.message_port_pub(pmt.intern("Frec_out"), msg)
 
         # Calcula el nuevo valor de frecuencia
         self.frec_inicial += self.intervalo_cambio       
@@ -47,14 +55,36 @@ class blk(gr.sync_block):
             self.frec_inicial = self.frec_cambio
             self.Val_frec = True
 
-        # Crear el diccionario freq_msg
-        freq_msg = {'freq': self.frec_inicial}
 
-        # Enviar freq_msg como un mensaje asincrónico
-        msg = pmt.to_pmt(freq_msg)
-        self.message_port_pub(pmt.intern("Frec_out"), msg)
+    # def send_message(self):
 
-        return (self.frec_inicial)
+    #     # Crear el diccionario freq_msg
+    #     freq_msg = {'freq': self.frec_inicial}
+
+    #     # Enviar freq_msg como un mensaje asincrónico
+    #     msg = pmt.to_pmt(freq_msg)
+    #     self.message_port_pub(pmt.intern("Frec_out"), msg)
+
+    #     if self.Val_frec:                      
+    #         self.frec_cambio = self.frec_inicial
+    #         self.Val_frec = False
+
+    #     # Calcula el nuevo valor de frecuencia
+    #     self.frec_inicial += self.intervalo_cambio       
+
+    #     # Si la frecuencia supera el valor final, vuelve a iniciar desde el valor inicial
+    #     if (self.frec_inicial) >= (self.frec_final):
+    #         self.frec_inicial = self.frec_cambio
+    #         self.Val_frec = True
+
+    #     # Crear el diccionario freq_msg
+    #     freq_msg = {'freq': self.frec_inicial}
+
+    #     # Enviar freq_msg como un mensaje asincrónico
+    #     msg = pmt.to_pmt(freq_msg)
+    #     self.message_port_pub(pmt.intern("Frec_out"), msg)
+
+    #     return (self.frec_inicial)
 
     def stop(self):
         self.msg_thread.stop()
