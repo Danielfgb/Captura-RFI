@@ -32,11 +32,11 @@ options:
     state: enabled
 
 blocks:
-- name: Frec_center
+- name: frec_final
   id: variable
   parameters:
     comment: ''
-    value: '115000000'
+    value: '200000000'
   states:
     bus_sink: false
     bus_source: false
@@ -55,7 +55,28 @@ blocks:
     bus_structure: null
     coordinate: [640, 16.0]
     rotation: 0
-    state: true
+    state: enabled
+- name: frec_inicial
+  id: variable_qtgui_range
+  parameters:
+    comment: ''
+    gui_hint: ''
+    label: frec_inicial
+    min_len: '200'
+    orient: Qt.Horizontal
+    rangeType: float
+    start: '80000000'
+    step: '10000000'
+    stop: '200000000'
+    value: '80000000'
+    widget: counter_slider
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [784, 12.0]
+    rotation: 0
+    state: disabled
 - name: frec_total
   id: variable
   parameters:
@@ -72,7 +93,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '2000000'
+    value: '20000000'
   states:
     bus_sink: false
     bus_source: false
@@ -96,6 +117,24 @@ blocks:
     coordinate: [1528, 472.0]
     rotation: 0
     state: enabled
+- name: blocks_file_sink_0
+  id: blocks_file_sink
+  parameters:
+    affinity: ''
+    alias: ''
+    append: 'False'
+    comment: ''
+    file: C:\Users\dfgom\OneDrive\Escritorio\USRP\RFI_Captura\Salida\Dat_crudos
+    type: float
+    unbuffered: 'False'
+    vlen: '1024'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2072, 268.0]
+    rotation: 0
+    state: enabled
 - name: blocks_message_debug_0
   id: blocks_message_debug
   parameters:
@@ -106,7 +145,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [352, 224.0]
+    coordinate: [408, 264.0]
     rotation: 0
     state: enabled
 - name: blocks_multiply_const_xx_0
@@ -124,7 +163,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1256, 464.0]
+    coordinate: [1264, 464.0]
     rotation: 0
     state: enabled
 - name: blocks_nlog10_ff_0
@@ -142,7 +181,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1784, 452.0]
+    coordinate: [1792, 452.0]
     rotation: 0
     state: enabled
 - name: blocks_stream_to_vector_0
@@ -166,34 +205,102 @@ blocks:
 - name: epy_block_0
   id: epy_block
   parameters:
-    _source_code: "\r\nimport numpy as np\r\nfrom gnuradio import gr\r\n\r\nclass\
-      \ blk(gr.sync_block):\r\n    \"\"\"Embedded Python Block example - guarda datos\
-      \ en archivo CSV\"\"\"\r\n\r\n    def __init__(self, filename=\"output.csv\"\
-      ):\r\n        \"\"\"arguments to this function show up as parameters in GRC\"\
-      \"\"\r\n        gr.sync_block.__init__(\r\n            self,\r\n           \
-      \ name='Embedded Python Block',  # will show up in GRC\r\n            in_sig=[(np.float32,\
-      \ 1024)],\r\n            out_sig=None  # no output\r\n        )\r\n        self.filename\
-      \ = filename\r\n        self.data = []  # Lista para almacenar los datos recibidos\r\
-      \n\r\n    def work(self, input_items, output_items):\r\n        \"\"\"Guarda\
-      \ los datos recibidos en la lista data\"\"\"\r\n        self.data.extend(input_items[0])\r\
-      \n        return len(input_items[0])\r\n\r\n    def stop(self):\r\n        \"\
-      \"\"Al detener el flujo, guarda los datos en el archivo CSV\"\"\"\r\n      \
-      \  np.savetxt(self.filename, self.data, delimiter=',')\r\n        return True\r\
-      \n\r\n\r\n\r\n"
+    _source_code: "###################################################################################################\r\
+      \n\r\n# import numpy as np\r\n# import csv\r\n# from gnuradio import gr\r\n\r\
+      \n# class CSVWriterBlock(gr.sync_block):\r\n#     def __init__(self, filename=\"\
+      output.csv\"):\r\n#         gr.sync_block.__init__(\r\n#             self,\r\
+      \n#             name=\"CSV Writer Block\",\r\n#             in_sig=[(np.float32,\
+      \ 1024)],  # Tipo de datos de entrada (float) y tama\xF1o de bloque (1024)\r\
+      \n#             out_sig=None,\r\n#         )\r\n#         self.filename = filename\r\
+      \n#         self.file = open(self.filename, \"w\", newline=\"\")\r\n#      \
+      \   self.writer = csv.writer(self.file)\r\n#         self.writer.writerow([\"\
+      Sample\"])\r\n\r\n#     def work(self, input_items, output_items):\r\n#    \
+      \     data_array = input_items[0]\r\n        \r\n#         # Escribir los datos\
+      \ en el archivo CSV\r\n#         self.writer.writerows(data_array)\r\n     \
+      \   \r\n#         # Devolver el n\xFAmero de elementos procesados\r\n#     \
+      \    return len(input_items[0])\r\n\r\n#     def stop(self):\r\n#         #\
+      \ Cerrar el archivo CSV cuando se detenga el flujo\r\n#         self.file.close()\r\
+      \n\r\n###################################################################################################\r\
+      \n\r\n# class CSVWriterBlock(gr.sync_block):\r\n#     def __init__(self, filename=\"\
+      output.csv\"):\r\n#         gr.sync_block.__init__(\r\n#             self,\r\
+      \n#             name=\"CSV Writer Block\",\r\n#             in_sig=[(np.float32,\
+      \ 1024)],  # Tipo de datos de entrada (float) y tama\xF1o de bloque (1024)\r\
+      \n#             out_sig=None,\r\n#         )\r\n#         self.filename = filename\r\
+      \n#         self.file = open(self.filename, \"w\", newline=\"\")\r\n#      \
+      \   self.writer = csv.writer(self.file)\r\n\r\n#     def work(self, input_items,\
+      \ output_items):\r\n#         data_array = input_items[0]\r\n\r\n#         #\
+      \ Utilizar NumPy para organizar los datos en filas\r\n#         data_array =\
+      \ data_array.reshape(-1, 1)\r\n        \r\n#         # Escribir los datos en\
+      \ el archivo CSV\r\n#         self.writer.writerows(data_array.tolist())\r\n\
+      \        \r\n#         # Devolver el n\xFAmero de elementos procesados\r\n#\
+      \         return len(input_items[0])\r\n\r\n#     def stop(self):\r\n#     \
+      \    # Cerrar el archivo CSV cuando se detenga el flujo\r\n#         self.file.close()\r\
+      \n\r\n###################################################################################################\r\
+      \n\r\n# import csv\r\n# import numpy as np\r\n# from gnuradio import gr\r\n\
+      # import time\r\n# import pmt\r\n\r\n# class CSVWriterBlock(gr.sync_block):\r\
+      \n    \r\n#     def __init__(self, filename=\"output.csv\"):\r\n#         gr.sync_block.__init__(\r\
+      \n#             self,\r\n#             name=\"CSV Writer Block\",\r\n#     \
+      \        in_sig=[(np.float32, 1024)],  # Tipo de datos de entrada (float) y\
+      \ tama\xF1o de bloque (1024)\r\n#             out_sig=None,\r\n#         )\r\
+      \n#         self.filename = filename\r\n#         self.file = open(self.filename,\
+      \ \"w\", newline=\"\")\r\n#         self.writer = csv.writer(self.file)\r\n\
+      \        \r\n#         # Registrar la entrada de mensajes\r\n#         self.message_port_register_in(pmt.intern(\"\
+      Frec_in\"))\r\n#         self.set_msg_handler(pmt.intern(\"Frec_in\"), self.handle_message)\r\
+      \n\r\n#     def handle_message(self, msg):\r\n#         # Procesar el mensaje\
+      \ as\xEDncrono y almacenar los datos en la variable \r\n#         self.message_data\
+      \ = pmt.to_python(msg)\r\n#         print(\"Mensaje recibido:\", self.message_data)\r\
+      \n\r\n\r\n#     def work(self, input_items, output_items):\r\n#         data_array\
+      \ = input_items[0]\r\n\r\n#         # Verificar si hay un mensaje y procesarlo\
+      \ si existe\r\n#         if hasattr(self, 'message_data'):\r\n#            \
+      \ #print(\"Mensaje almacenado en handle_message:\", self.message_data)\r\n \
+      \  \r\n#             freq_value = self.message_data.get('freq', None)\r\n# \
+      \            if freq_value is not None:\r\n#                 print(\"Valor num\xE9\
+      rico de frecuencia:\", freq_value)\r\n\r\n#             self.Frec_central =\
+      \ self.message_data\r\n\r\n#         # Utilizar NumPy para organizar los datos\
+      \ en filas\r\n#         data_array = data_array.reshape(-1, 1)\r\n\r\n#    \
+      \     # Escribir los datos en el archivo CSV\r\n#         self.writer.writerows(data_array.tolist())\r\
+      \n\r\n#         # Devolver el n\xFAmero de elementos procesados\r\n#       \
+      \  return len(input_items[0])\r\n\r\n#     def stop(self):\r\n#         # Cerrar\
+      \ el archivo CSV cuando se detenga el flujo\r\n#         self.file.close()\r\
+      \n\r\n####################################### prueba con cambio a valor flotante\
+      \ y que solo imprima si cambia ################# falta a\xF1adir lo de las frecuencias\
+      \ que estan en el otro codigo y cambiarlo a la otra columna \r\nimport csv\r\
+      \nimport numpy as np\r\nfrom gnuradio import gr\r\nimport pmt\r\n\r\nclass CSVWriterBlock(gr.sync_block):\r\
+      \n    \r\n    def __init__(self, filename=\"output.csv\"):\r\n        gr.sync_block.__init__(\r\
+      \n            self,\r\n            name=\"CSV Writer Block\",\r\n          \
+      \  in_sig=[(np.float32, 1024)],  # Tipo de datos de entrada (float) y tama\xF1\
+      o de bloque (1024)\r\n            out_sig=None,\r\n        )\r\n        self.filename\
+      \ = filename\r\n        self.file = open(self.filename, \"w\", newline=\"\"\
+      )\r\n        self.writer = csv.writer(self.file)\r\n        self.prev_freq_value\
+      \ = None  # Valor de frecuencia anterior\r\n\r\n        # Registrar la entrada\
+      \ de mensajes\r\n        self.message_port_register_in(pmt.intern(\"Frec_in\"\
+      ))\r\n        self.set_msg_handler(pmt.intern(\"Frec_in\"), self.handle_message)\r\
+      \n\r\n    def handle_message(self, msg):\r\n        # Procesar el mensaje as\xED\
+      ncrono y almacenar los datos num\xE9ricos\r\n        message_data = pmt.to_python(msg)\r\
+      \n        freq_value = message_data.get('freq', None)\r\n\r\n        if freq_value\
+      \ is not None:\r\n            freq_value = float(freq_value)  # Convertir a\
+      \ float\r\n            if self.prev_freq_value is None or freq_value != self.prev_freq_value:\r\
+      \n                self.prev_freq_value = freq_value\r\n                print(\"\
+      Valor num\xE9rico de frecuencia:\", freq_value)\r\n\r\n    def work(self, input_items,\
+      \ output_items):\r\n        data_array = input_items[0]\r\n\r\n        # Utilizar\
+      \ NumPy para organizar los datos en filas\r\n        data_array = data_array.reshape(-1,\
+      \ 1)\r\n\r\n        # Escribir los datos en el archivo CSV\r\n        self.writer.writerows(data_array.tolist())\r\
+      \n\r\n        # Devolver el n\xFAmero de elementos procesados\r\n        return\
+      \ len(input_items[0])\r\n\r\n    def stop(self):\r\n        # Cerrar el archivo\
+      \ CSV cuando se detenga el flujo\r\n        self.file.close()\r\n"
     affinity: ''
     alias: ''
     comment: ''
-    filename: r"C:\Users\dfgom\OneDrive\Escritorio\USRP\RFI_Captura\Salida\outputpru.csv"
+    filename: r"C:\Users\dfgom\OneDrive\Escritorio\USRP\RFI_Captura\Salida\outputprueba2.csv"
     maxoutbuf: '0'
     minoutbuf: '0'
   states:
-    _io_cache: ('Embedded Python Block', 'blk', [('filename', "'output.csv'")], [('0',
-      'float', 1024)], [], 'Embedded Python Block example - guarda datos en archivo
-      CSV', ['filename'])
+    _io_cache: ('CSV Writer Block', 'CSVWriterBlock', [('filename', "'output.csv'")],
+      [('0', 'float', 1024), ('Frec_in', 'message', 1)], [], '', ['filename'])
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2064, 800.0]
+    coordinate: [2056, 840.0]
     rotation: 0
     state: enabled
 - name: epy_block_2
@@ -247,32 +354,37 @@ blocks:
     bus_structure: null
     coordinate: [2064, 644.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: epy_block_3
   id: epy_block
   parameters:
     _source_code: "import numpy as np\nfrom gnuradio import gr\nimport time\nimport\
       \ pmt\n\nclass blk(gr.sync_block):\n    \"\"\"sending asynchronous messages\"\
-      \"\"\n\n    def __init__(self, frec_inicial=100e6, frec_final=200e6, intervalo_tiempo=4,\
-      \ ancho_banda=10e6):\n        \n        gr.sync_block.__init__(\n          \
-      \  self,\n            name='Control frecuencia USRP',\n            in_sig=None,\
-      \  # No input signal\n            out_sig=None  # No output signal\n       \
-      \ )\n\n        # DECLARA LAS VARIABLES INICIALES \n        self.frec_inicial\
-      \ = frec_inicial\n        self.frec_final = frec_final\n        self.intervalo_tiempo\
-      \ = intervalo_tiempo\n        self.intervalo_cambio = (ancho_banda/2)\n\n  \
-      \      # Configurar el puerto de mensajes\n        self.message_port_register_out(pmt.intern(\"\
+      \"\"\n\n    def __init__(self, frec_inicial=100000000, frec_final=200000000,\
+      \ intervalo_tiempo=5, ancho_banda=20000000):\n        \n        gr.sync_block.__init__(\n\
+      \            self,\n            name='Control frecuencia USRP',\n          \
+      \  in_sig=None,  # No input signal\n            out_sig=None  # No output signal\n\
+      \        )\n\n        # DECLARA LAS VARIABLES INICIALES ||||| Frec_I1 = frec_ini\
+      \ + BW/2 ,  Frec_I2 = Frec_I1 + BW ..... Frec_Fn = Frec_In-1 + BW/2 || if (Frec_Fn\
+      \ == frec_final) = Frec_Fn = Frec_I1\n\n        self.Val_frec = True\n\n   \
+      \     self.frec_inicial = (frec_inicial) + (ancho_banda/2)\n        self.frec_final\
+      \ = frec_final\n        self.intervalo_tiempo = intervalo_tiempo\n        self.intervalo_cambio\
+      \ = ancho_banda\n        self.frec_cambio = (frec_inicial) + (ancho_banda/2)\n\
+      \n        # Configurar el puerto de mensajes\n        self.message_port_register_out(pmt.intern(\"\
       Frec_out\"))\n\n        # Iniciar el hilo del remitente del mensaje\n      \
       \  self.msg_thread = MsgSenderThread(self)\n        self.msg_thread.start()\n\
-      \n    def send_message(self):\n\n        # Calcula el nuevo valor de frecuencia\n\
-      \        self.frec_inicial += self.intervalo_cambio\n\n        # Si la frecuencia\
+      \n\n\n    def send_message(self):\n\n        if self.Val_frec:             \
+      \         \n            self.frec_cambio = self.frec_inicial\n            self.Val_frec\
+      \ = False\n\n        # Crear el diccionario freq_msg\n        freq_msg = {'freq':\
+      \ self.frec_inicial}\n\n        # Enviar freq_msg como un mensaje asincr\xF3\
+      nico\n        msg = pmt.to_pmt(freq_msg)\n        self.message_port_pub(pmt.intern(\"\
+      Frec_out\"), msg)\n\n        # Calcula el nuevo valor de frecuencia\n      \
+      \  self.frec_inicial += self.intervalo_cambio       \n\n        # Si la frecuencia\
       \ supera el valor final, vuelve a iniciar desde el valor inicial\n        if\
-      \ self.frec_inicial >= self.frec_final:\n            self.frec_inicial = self.frec_inicial\n\
-      \n        # Crear el diccionario freq_msg\n        freq_msg = {'freq': self.frec_inicial}\n\
-      \n        # Enviar freq_msg como un mensaje asincr\xF3nico\n        msg = pmt.to_pmt(freq_msg)\n\
-      \        self.message_port_pub(pmt.intern(\"Frec_out\"), msg)\n\n        return\
-      \ (self.frec_inicial)\n\n    def stop(self):\n        self.msg_thread.stop()\n\
-      \        self.msg_thread = None\n\n    def msg_handler(self, msg):\n       \
-      \ if pmt.is_eq(msg, pmt.intern(\"msg_send\")):\n            self.send_message()\n\
+      \ (self.frec_inicial) >= (self.frec_final):\n            self.frec_inicial =\
+      \ self.frec_cambio\n            self.Val_frec = True\n\n    def stop(self):\n\
+      \        self.msg_thread.stop()\n        self.msg_thread = None\n\n    def msg_handler(self,\
+      \ msg):\n        if pmt.is_eq(msg, pmt.intern(\"msg_send\")):\n            self.send_message()\n\
       \nclass MsgSenderThread(gr.threading.Thread):\n    def __init__(self, block):\n\
       \        gr.threading.Thread.__init__(self)\n        self.block = block\n  \
       \      self.running = True\n\n    def stop(self):\n        self.running = False\n\
@@ -280,22 +392,22 @@ blocks:
       \            self.block.send_message()"
     affinity: ''
     alias: ''
-    ancho_banda: '20000000'
+    ancho_banda: samp_rate_0
     comment: ''
-    frec_final: '200000000'
+    frec_final: frec_final
     frec_inicial: frec_inicial
-    intervalo_tiempo: '6'
+    intervalo_tiempo: '10'
     maxoutbuf: '0'
     minoutbuf: '0'
   states:
-    _io_cache: ('Control frecuencia USRP', 'blk', [('frec_inicial', '100000000.0'),
-      ('frec_final', '200000000.0'), ('intervalo_tiempo', '4'), ('ancho_banda', '10000000.0')],
+    _io_cache: ('Control frecuencia USRP', 'blk', [('frec_inicial', '100000000'),
+      ('frec_final', '200000000'), ('intervalo_tiempo', '5'), ('ancho_banda', '20000000')],
       [], [('Frec_out', 'message', 1)], 'sending asynchronous messages', ['frec_final',
       'frec_inicial', 'intervalo_tiempo'])
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [48, 444.0]
+    coordinate: [48, 460.0]
     rotation: 0
     state: enabled
 - name: fft_vxx_0
@@ -350,7 +462,7 @@ blocks:
     color9: '"dark green"'
     comment: ''
     ctrlpanel: 'True'
-    fc: Frec_center
+    fc: '0'
     fftsize: '1024'
     freqhalf: 'True'
     grid: 'True'
@@ -396,7 +508,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [680, 772.0]
+    coordinate: [664, 780.0]
     rotation: 0
     state: true
 - name: qtgui_vector_sink_f_0
@@ -532,7 +644,7 @@ blocks:
     bus_structure: null
     coordinate: [688, 596.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: uhd_usrp_source_1
   id: uhd_usrp_source
   parameters:
@@ -602,7 +714,7 @@ blocks:
     bw7: '0'
     bw8: '0'
     bw9: '0'
-    center_freq0: frec_total
+    center_freq0: '0'
     center_freq1: '0'
     center_freq10: '0'
     center_freq11: '0'
@@ -908,11 +1020,13 @@ blocks:
 connections:
 - [blocks_complex_to_mag_squared_0, '0', blocks_nlog10_ff_0, '0']
 - [blocks_multiply_const_xx_0, '0', blocks_complex_to_mag_squared_0, '0']
+- [blocks_nlog10_ff_0, '0', blocks_file_sink_0, '0']
 - [blocks_nlog10_ff_0, '0', epy_block_0, '0']
 - [blocks_nlog10_ff_0, '0', epy_block_2, '0']
 - [blocks_nlog10_ff_0, '0', qtgui_vector_sink_f_0, '0']
 - [blocks_stream_to_vector_0, '0', fft_vxx_0, '0']
 - [epy_block_3, Frec_out, blocks_message_debug_0, print]
+- [epy_block_3, Frec_out, epy_block_0, Frec_in]
 - [epy_block_3, Frec_out, uhd_usrp_source_1, command]
 - [fft_vxx_0, '0', blocks_multiply_const_xx_0, '0']
 - [uhd_usrp_source_1, '0', blocks_stream_to_vector_0, '0']

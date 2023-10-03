@@ -10,7 +10,7 @@ class CSVWriterAndPlotBlock(gr.sync_block):
         gr.sync_block.__init__(
             self,
             name="CSV Writer and Plot Block",
-            in_sig=[(np.float32, 1024)],
+            in_sig=[(np.float32, 4096)],
             out_sig=None,
         )
         self.filename = filename
