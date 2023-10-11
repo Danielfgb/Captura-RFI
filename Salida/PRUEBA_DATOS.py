@@ -1,77 +1,100 @@
-import os
 import tkinter as tk
-from tkinter import ttk, filedialog
+import os
 import pandas as pd
-import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import subprocess
+from matplotlib.widgets import SpanSelector
 
-# Función para cargar y graficar los datos
-def plot_data(filename, start_idx, end_idx):
-    data = pd.read_csv(filename)
-    subset = data.iloc[start_idx:end_idx]
+carpeta = r'C:\Users\dfgom\OneDrive\Escritorio\USRP\RFI_Captura\Salida\Muestras'
 
-    fig, ax = plt.subplots(figsize=(8, 4))
-    ax.plot(subset['Frecuencia (Hz)'], subset['dB'])
-    ax.set_xlabel('Frecuencia (Hz)')
-    ax.set_ylabel('dB')
-    ax.set_title('Gráfico de datos')
+# Función para cargar y mostrar los datos desde un archivo CSV seleccionado
+def cargar_archivo():
+    archivo_seleccionado = archivo_var.get()
+    
+    if archivo_seleccionado:
+        df = pd.read_csv(os.path.join(carpeta, archivo_seleccionado))
+        
+        x = df.columns[0]  
+        y = df.columns[1]  
+        
+        x = df[x].values
+        y = df[y].values
+        
+        ax1.clear()
+        ax1.plot(x, y)
+        
+        # Ajustar los límites del eje y según tus necesidades
+        y_min = min(y) - 10
+        y_max = max(y) + 10
+        
+        ax1.set_ylim(y_min, y_max)
+        ax1.set_title(f'Archivo seleccionado: {archivo_seleccionado}')
+        
+        # Actualizar las variables globales x e y
+        global x_global, y_global
+        x_global = x
+        y_global = y
+        
+        canvas.draw()
 
-    canvas = FigureCanvasTkAgg(fig, master=frame)
-    canvas_widget = canvas.get_tk_widget()
-    canvas_widget.grid(row=1, column=0, padx=10, pady=10)
+# Función para manejar la selección de una región
+def onselect(xmin, xmax):
+    indmin, indmax = np.searchsorted(x_global, (xmin, xmax))
+    indmax = min(len(x_global) - 1, indmax)
 
-# Función para actualizar el gráfico cuando se selecciona un archivo diferente
-def update_plot(event):
-    selected_file = os.path.join(folder_path, file_listbox.get(file_listbox.curselection()))
-    update_slider_range(selected_file)
-    plot_data(selected_file, 0, 1000)
+    region_x = x_global[indmin:indmax]
+    region_y = y_global[indmin:indmax]
 
-# Función para actualizar el rango del slider en función de los datos del archivo CSV
-def update_slider_range(file_path):
-    data = pd.read_csv(file_path)
-    max_value = len(data) - 1000 if len(data) > 1000 else 0
-    slider.config(from_=0, to=max_value)
-    slider.set(0)
-
-# Función para ejecutar el archivo .py "realizar_muestra.py"
-def execute_realizar_muestra():
-    subprocess.run(["python", r"C:\Users\dfgom\OneDrive\Escritorio\USRP\RFI_Captura\Captura_RFI.py"])
-
-# Carpeta que contiene los archivos CSV
-folder_path = r'C:\Users\dfgom\OneDrive\Escritorio\USRP\RFI_Captura\Salida\Muestras'
+    if len(region_x) >= 2:
+        ax2.clear()
+        ax2.plot(region_x, region_y)
+        ax2.set_xlim(region_x[0], region_x[-1])
+        ax2.set_ylim(region_y.min(), region_y.max())
+        canvas.draw()
 
 # Crear la ventana principal
 root = tk.Tk()
-root.title("Visualizador de Datos CSV")
+root.title("Generador de Gráficas")
 
-# Crear un marco para organizar widgets
-frame = ttk.Frame(root)
-frame.pack(padx=20, pady=20)
 
-# Crear lista de archivos CSV en la carpeta
-file_list = [f for f in os.listdir(folder_path) if f.endswith('.csv')]
-file_listbox = tk.Listbox(frame, height=len(file_list))
-file_listbox.grid(row=0, column=0, padx=10, pady=10)
-for filename in file_list:
-    file_listbox.insert(tk.END, filename)
+# Obtener la lista de archivos CSV en la carpeta
+archivos_csv = [archivo for archivo in os.listdir(carpeta) if archivo.endswith('.csv')]
 
-# Vincular el evento <<ListboxSelect>> para actualizar el gráfico al seleccionar un archivo
-file_listbox.bind("<<ListboxSelect>>", update_plot)
+# Variable para almacenar el archivo seleccionado
+archivo_var = tk.StringVar(root)
+archivo_var.set(archivos_csv[0] if archivos_csv else "")
 
-# Crear un slider para navegar por los datos (inicialmente deshabilitado)
-slider = tk.Scale(frame, from_=0, to=0, orient=tk.HORIZONTAL, length=400, state='disabled')
-slider.grid(row=2, column=0, padx=10, pady=10)
+# Crear una lista desplegable con los nombres de los archivos
+archivo_dropdown = tk.OptionMenu(root, archivo_var, *archivos_csv)
+archivo_dropdown.pack()
 
-# Crear botón "Realizar Muestra" para ejecutar el archivo .py
-realizar_muestra_button = ttk.Button(frame, text="Realizar Muestra", command=execute_realizar_muestra)
-realizar_muestra_button.grid(row=3, column=0, padx=10, pady=10)
+# Crear un botón para cargar y mostrar los datos del archivo seleccionado
+cargar_button = tk.Button(root, text="Generar Gráfica", command=cargar_archivo)
+cargar_button.pack()
 
-# Iniciar la interfaz gráfica con el primer archivo
-if file_list:
-    initial_file = os.path.join(folder_path, file_list[0])
-    update_slider_range(initial_file)
-    plot_data(initial_file, 0, 1000)
+# Crear un lienzo para mostrar la gráfica generada
+fig = Figure(figsize=(10, 8))
+ax1 = fig.add_subplot(211)
+ax2 = fig.add_subplot(212)
 
-# Iniciar la interfaz gráfica
+canvas = FigureCanvasTkAgg(fig, master=root)
+canvas.get_tk_widget().pack()
+
+# Crear el selector de región
+span = SpanSelector(
+    ax1,
+    onselect,
+    "horizontal",
+    useblit=True,
+    props=dict(alpha=0.5, facecolor="tab:blue"),
+    interactive=True,
+    drag_from_anywhere=True
+)
+
+# Variables globales para x e y
+x_global = []
+y_global = []
+
+# Mostrar la ventana principal
 root.mainloop()
