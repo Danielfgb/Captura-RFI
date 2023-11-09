@@ -6,7 +6,7 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.widgets import SpanSelector
 
-carpeta = r'C:\Users\dfgom\OneDrive\Escritorio\USRP\RFI_Captura\Salida\Muestras'
+carpeta = r'C:\Users\dfgom\OneDrive\Escritorio\USRP\RFI_Captura\Salida\Resultados'
 
 # Función para cargar y mostrar los datos desde un archivo CSV seleccionado
 def cargar_archivo():
@@ -74,7 +74,7 @@ cargar_button = tk.Button(root, text="Generar Gráfica", command=cargar_archivo)
 cargar_button.pack()
 
 # Crear un lienzo para mostrar la gráfica generada
-fig = Figure(figsize=(10, 8))
+fig = Figure(figsize=(18, 12))
 ax1 = fig.add_subplot(211)
 ax2 = fig.add_subplot(212)
 
