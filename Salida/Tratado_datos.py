@@ -2,6 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+import gc # Liberar memoria ram
 
 # Carga el archivo csv para tratarlo con pandas 
 Carga_Datos = pd.read_csv(r"C:\Users\dfgom\OneDrive\Escritorio\USRP\RFI_Captura\Salida\CSV_Salida.csv")
@@ -14,7 +15,7 @@ Carga_Datos = Carga_Datos.replace(-379.29779052734375, np.nan) # error al tomar 
 conteo_frecuencia = Carga_Datos['Frecuencia (Hz)'].value_counts()
 print(conteo_frecuencia)
 
-################ Separa el archivo en el numero de muestras que se realizaron (Visualizacion) ###############
+################ Separa el archivo en el numero de muestras que se realizaron (Visualización) ###############
 
 recuentos_por_muestra = {}
 
@@ -52,47 +53,48 @@ for muestra, conteos in recuentos_por_muestra.items():
 # divide por grupos de frecuencias y de muestras 
 
 def dividir_y_guardar_grupos(Carga_Datos, carpeta_salida):
-    grupos = []
-    grupo_actual = None
-    cambios = np.where(Carga_Datos['Frecuencia (Hz)'].values[:-1] > Carga_Datos['Frecuencia (Hz)'].values[1:])[0]
-
-    inicio = 0
-    for cambio in cambios:
-        grupo_actual = Carga_Datos.iloc[inicio:cambio + 1]
-        grupos.append(grupo_actual)
-        inicio = cambio + 1
-
-    grupo_actual = Carga_Datos.iloc[inicio:]
-    grupos.append(grupo_actual)
-
     if not os.path.exists(carpeta_salida):
         os.makedirs(carpeta_salida)
 
-    def agrupar_por_frecuencia(df):
-        grupos_frecuencia = {}
-        for _, row in df.iterrows():
-            frecuencia = row['Frecuencia (Hz)']
-            if frecuencia not in grupos_frecuencia:
-                grupos_frecuencia[frecuencia] = []
-            grupos_frecuencia[frecuencia].append(row)
-        return list(grupos_frecuencia.values())
+    cambios = np.where(Carga_Datos['Frecuencia (Hz)'].values[:-1] > Carga_Datos['Frecuencia (Hz)'].values[1:])[0]
+    cambios = np.concatenate(([0], cambios, [len(Carga_Datos)]))  # Agregar el inicio y final del DataFrame
 
-    for i, grupo in enumerate(grupos):
-        
-        grupos_frecuencia = agrupar_por_frecuencia(grupo)
+    for i in range(len(cambios) - 1):
+        inicio, fin = cambios[i], cambios[i + 1]
+        grupo = Carga_Datos.iloc[inicio:fin]
+
+        grupos_frecuencia = grupo.groupby('Frecuencia (Hz)').apply(lambda x: x.to_dict(orient='records')).tolist()
 
         for j, subgrupo in enumerate(grupos_frecuencia):
-            nombre_archivo = os.path.join(carpeta_salida, f'Muestra_{i + 1}_Grupo_{j + 1}.csv')
-            df = pd.DataFrame(subgrupo)
-            df.to_csv(nombre_archivo, index=False)
-            print(f"Grupo {i + 1}, Subgrupo {j + 1} guardado en '{nombre_archivo}'")
+            if subgrupo:  # Verificar si la lista no está vacía
+                # Convertir a DataFrame solo si subgrupo[0] es un diccionario y no un escalar
+                if isinstance(subgrupo[0], dict):
+                    nombre_archivo = os.path.join(carpeta_salida, f'Muestra_{i + 1}_Grupo_{j + 1}.csv')
+                    pd.DataFrame(subgrupo).to_csv(nombre_archivo, index=False)
+                    print(f"Grupo {i + 1}, Subgrupo {j + 1} guardado en '{nombre_archivo}'")
 
 carpeta_muestras = 'Muestras'
 dividir_y_guardar_grupos(Carga_Datos, carpeta_muestras)
 
+######################### Borra variables almacenadas en RAM ###################
+#del Carga_Datos
+
+def limpiar_ram(variables_locales):
+    # Lista de variables locales a eliminar
+    variables_a_eliminar = ['inicio', 'fin', 'grupo', 'grupos_frecuencia', 'subgrupo', 'nombre_archivo', 'Carga_Datos','nombre_muestra','archivo']
+
+    gc.collect()
+
+    # Eliminar las variables locales
+    for variable in variables_a_eliminar:
+        if variable in variables_locales:
+            del variables_locales[variable]
+
+limpiar_ram(locals())
+
 ###################################################################################################
 
-carpeta_entrada = r'C:\Users\dfgom\OneDrive\Escritorio\USRP\RFI_Captura\Salida\Muestras' # Remplazar por variable (carpeta_muestras)
+carpeta_entrada = r'C:\Users\dfgom\OneDrive\Escritorio\USRP\RFI_Captura\Salida\Muestras'
 
 archivos = os.listdir(carpeta_entrada)
 
@@ -126,7 +128,7 @@ for archivo in archivos:
 
         print(f"Archivo '{archivo}' procesado y sobrescrito.")
 
-print("Proceso de procesamiento y sobrescritura de grupos completado.")
+print("Proceso de procesamiento y sobrescrita de grupos completado.")
 
 #################Conserva primera columna (Frecuencia Hz) segunda columna (Promedio dB de grupo de frecuencia)####################
 # elimina los datos restantes, concerva primera columna (Frecuencia) y ultima columna, promedio de frecuencias por muestra 
@@ -162,7 +164,7 @@ for archivo in os.listdir(carpeta_entrada):
 
 for nombre_muestra, df in dataframes_por_muestra.items():
     archivo_salida = os.path.join(carpeta_entrada, f"Muestra_{nombre_muestra}.csv")
-    df.to_csv(archivo_salida, index=False, mode='w')  
+    df.to_csv(archivo_salida, index=False, mode='w')  #
 
 ############################ Asignacion de las frecuencias para las muestras ####################################
 
@@ -231,38 +233,36 @@ for archivo_csv in archivos_csv:
 
 ################################################################################################
 
+carpeta_entrada = r'C:\Users\dfgom\OneDrive\Escritorio\USRP\RFI_Captura\Salida\Muestras'
+
+archivos = os.listdir(carpeta_entrada)
+
 for archivo in archivos:
     if archivo.endswith('.csv'):
-        # Ruta completa al archivo
+        
         archivo_completo = os.path.join(carpeta_entrada, archivo)
         
-        # Lee el archivo CSV en un DataFrame
         df = pd.read_csv(archivo_completo)
-        
-        # Inicializa una lista para almacenar los resultados
+
         result_data = []
         
-        # Itera a través de los valores únicos en la columna 'Frecuencia (Hz)'
         for freq in df['Frecuencia (Hz)'].unique():
             # Filtra las filas que tienen el mismo valor en 'Frecuencia (Hz)'
             filtered_rows = df[df['Frecuencia (Hz)'] == freq]
             
-            # Calcula el promedio de la columna 'dB'
             avg_db = filtered_rows['dB'].mean()
-            
+      
             # Agrega una tupla con el valor de 'Frecuencia (Hz)' y el promedio 'dB' a la lista de resultados
             result_data.append((freq, avg_db))
         
-        # Crea un DataFrame a partir de la lista de resultados
         result_df = pd.DataFrame(result_data, columns=['Frecuencia (Hz)', 'dB'])
         
-        # Guarda el resultado en el mismo archivo CSV
         result_df.to_csv(archivo_completo, index=False)
 
 
 #########################################################################################
 
-################################3 Promedio ###############################################
+################################ Promedio  y maximo de todas las muestras adquiridas ##############################################
 ruta_resultados = 'Resultados'
 
 # Obtener la lista de archivos CSV en el directorio
