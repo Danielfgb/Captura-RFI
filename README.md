@@ -32,7 +32,7 @@ Esto es debido a que la tarjeta USRP cuenta con un ancho de banda limitado de 20
 
     ![Variable](./img/bloc_csv.png)
 
-3. Adquisición: A la hora de realizar la adquisicion de las señales RF se vera en pantalla 
+3. Adquisición: A la hora de realizar la adquisición de las señales RF se vera en pantalla 
 
 4. archivo generado 
 
