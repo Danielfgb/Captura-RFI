@@ -1,2 +1,2 @@
-Salida/*.csv
+Salida/**/*.csv
 __pycache__/
