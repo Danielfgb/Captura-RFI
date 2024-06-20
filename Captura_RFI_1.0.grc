@@ -1,6 +1,7 @@
 options:
   parameters:
     author: Daniel Gomez
+    catch_exceptions: 'True'
     category: '[GRC Hier Blocks]'
     cmake_opt: ''
     comment: ''
@@ -27,62 +28,82 @@ options:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [128, 28.0]
+    coordinate: [128, 32.0]
     rotation: 0
     state: enabled
 
 blocks:
-- name: frec_final
+- name: Intervalo_Tiempo
   id: variable
   parameters:
     comment: ''
-    value: '200000000'
+    value: '0.5'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [504, 56.0]
+    coordinate: [680, 60.0]
+    rotation: 0
+    state: true
+- name: frec_final
+  id: variable
+  parameters:
+    comment: ''
+    value: '300000000'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [448, 60.0]
     rotation: 0
     state: enabled
 - name: frec_inicial
   id: variable
   parameters:
     comment: ''
-    value: '70000000'
+    value: '80000000'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [640, 56.0]
+    coordinate: [560, 60.0]
     rotation: 0
     state: enabled
-- name: samp_rate_0
+- name: samp_rate
   id: variable
   parameters:
     comment: ''
-    value: '20000000'
+    value: '1000000'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [352, 56.0]
+    coordinate: [328, 60.0]
     rotation: 0
     state: enabled
 - name: CSV
   id: epy_block
   parameters:
-    _source_code: "import csv\r\nimport numpy as np\r\nfrom gnuradio import gr\r\n\
-      import pmt\r\n\r\nclass CSVWriterBlock(gr.sync_block):\r\n    \r\n    def __init__(self,\
-      \ filename=\"output.csv\"):\r\n        gr.sync_block.__init__(\r\n         \
-      \   self,\r\n            name=\"CSV Writer Block\",\r\n            in_sig=[(np.float32,\
-      \ 1024)],  # Tipo de datos de entrada (float) y tama\xF1o de bloque (1024)\r\
-      \n            out_sig=None,\r\n        )\r\n        self.filename = filename\r\
-      \n        self.file = open(self.filename, \"w\", newline=\"\")\r\n        self.writer\
-      \ = csv.writer(self.file)\r\n        self.prev_freq_value = None  # Valor de\
-      \ frecuencia anterior\r\n        self.header_written = False  # Variable para\
-      \ rastrear si se ha escrito el encabezado\r\n\r\n        # Registrar la entrada\
-      \ de mensajes\r\n        self.message_port_register_in(pmt.intern(\"Frec_in\"\
-      ))\r\n        self.set_msg_handler(pmt.intern(\"Frec_in\"), self.handle_message)\r\
+    Filename_csv: '"CSV_Salida"'
+    _source_code: "import os\r\nimport csv\r\nimport numpy as np\r\nfrom gnuradio\
+      \ import gr\r\nimport pmt\r\nfrom datetime import datetime\r\n\r\nclass CSVWriterBlock(gr.sync_block):\r\
+      \n\r\n    def __init__(self, Filename_csv=\"CSV_Salida\"):\r\n        gr.sync_block.__init__(\r\
+      \n            self,\r\n            name=\"CSV Writer Block\",\r\n          \
+      \  in_sig=[(np.float32, 1024)],  # Tipo de datos de entrada (float32) y tama\xF1\
+      o de bloque (1024)\r\n            out_sig=None,\r\n        )\r\n\r\n       \
+      \ # Define la direccion donde se guarda el csv\r\n        output_dir = \"Salida\"\
+      \r\n        if not os.path.exists(output_dir):\r\n            os.makedirs(output_dir)\r\
+      \n\r\n        # Genera dia-mes-a\xF1o_hora-min-s para el nombre del archivo\
+      \ csv\r\n        now = datetime.now()\r\n        date_time_str = now.strftime(\"\
+      %d-%m-%Y_%H-%M-%S\")\r\n\r\n        # Construye el nombre del archivo\r\n  \
+      \      filename = f\"{Filename_csv}_{date_time_str}.csv\"\r\n        self.filename\
+      \ = os.path.join(output_dir, filename)\r\n        print(f\"-- Medici\xF3n guardada\
+      \ en: {self.filename} --\")  \r\n\r\n        self.file = open(self.filename,\
+      \ \"w\", newline=\"\")\r\n        self.writer = csv.writer(self.file)\r\n  \
+      \      self.prev_freq_value = None  # Valor de frecuencia anterior\r\n     \
+      \   self.header_written = False  # Variable para rastrear si se ha escrito el\
+      \ encabezado\r\n\r\n        # Registrar la entrada de mensajes\r\n        self.message_port_register_in(pmt.intern(\"\
+      Frec_in\"))\r\n        self.set_msg_handler(pmt.intern(\"Frec_in\"), self.handle_message)\r\
       \n\r\n    def handle_message(self, msg):\r\n        # Procesar el mensaje as\xED\
       ncrono y almacenar los datos num\xE9ricos\r\n        message_data = pmt.to_python(msg)\r\
       \n        freq_value = message_data.get('freq', None)\r\n\r\n        if freq_value\
@@ -111,16 +132,15 @@ blocks:
     affinity: ''
     alias: ''
     comment: ''
-    filename: r"C:\Users\dfgom\OneDrive\Escritorio\USRP\RFI_Captura\Salida\CSV_Salida.csv"
     maxoutbuf: '0'
     minoutbuf: '0'
   states:
-    _io_cache: ('CSV Writer Block', 'CSVWriterBlock', [('filename', "'output.csv'")],
-      [('0', 'float', 1024), ('Frec_in', 'message', 1)], [], '', ['filename'])
+    _io_cache: ('CSV Writer Block', 'CSVWriterBlock', [('Filename_csv', "'CSV_Salida'")],
+      [('0', 'float', 1024), ('Frec_in', 'message', 1)], [], '', [])
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2016, 656.0]
+    coordinate: [2192, 764.0]
     rotation: 0
     state: enabled
 - name: Control_Frecuencia
@@ -160,11 +180,11 @@ blocks:
       \            self.block.send_message()"
     affinity: ''
     alias: ''
-    ancho_banda: samp_rate_0
+    ancho_banda: samp_rate
     comment: ''
     frec_final: frec_final
     frec_inicial: frec_inicial
-    intervalo_tiempo: '0.2'
+    intervalo_tiempo: Intervalo_Tiempo
     maxoutbuf: '0'
     minoutbuf: '0'
   states:
@@ -175,7 +195,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [64, 444.0]
+    coordinate: [8, 440.0]
     rotation: 0
     state: enabled
 - name: blocks_complex_to_mag_squared_0
@@ -191,25 +211,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1480, 472.0]
-    rotation: 0
-    state: enabled
-- name: blocks_file_sink_0
-  id: blocks_file_sink
-  parameters:
-    affinity: ''
-    alias: ''
-    append: 'False'
-    comment: ''
-    file: C:\Users\dfgom\OneDrive\Escritorio\USRP\RFI_Captura\Salida\Dat_crudos
-    type: float
-    unbuffered: 'False'
-    vlen: '1024'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [2016, 268.0]
+    coordinate: [1496, 460.0]
     rotation: 0
     state: enabled
 - name: blocks_message_debug_0
@@ -218,11 +220,13 @@ blocks:
     affinity: ''
     alias: ''
     comment: ''
+    en_uvec: 'True'
+    log_level: info
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [352, 272.0]
+    coordinate: [360, 264.0]
     rotation: 0
     state: enabled
 - name: blocks_multiply_const_xx_0
@@ -240,7 +244,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1216, 464.0]
+    coordinate: [1248, 452.0]
     rotation: 0
     state: enabled
 - name: blocks_nlog10_ff_0
@@ -258,7 +262,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1760, 452.0]
+    coordinate: [1760, 444.0]
     rotation: 0
     state: enabled
 - name: blocks_stream_to_vector_0
@@ -276,9 +280,30 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [664, 480.0]
+    coordinate: [608, 472.0]
     rotation: 0
     state: enabled
+- name: blocks_throttle2_0
+  id: blocks_throttle2
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    ignoretag: 'True'
+    limit: auto
+    maximum: '0.1'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    samples_per_second: '50000'
+    type: float
+    vlen: '1024'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1976, 588.0]
+    rotation: 0
+    state: true
 - name: fft_vxx_0
   id: fft_vxx
   parameters:
@@ -297,7 +322,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [936, 436.0]
+    coordinate: [856, 424.0]
     rotation: 0
     state: enabled
 - name: qtgui_vector_sink_f_0
@@ -340,6 +365,7 @@ blocks:
     label7: ''
     label8: ''
     label9: ''
+    legend: 'True'
     maxoutbuf: '0'
     minoutbuf: '0'
     name: '""'
@@ -370,7 +396,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2016, 408.0]
+    coordinate: [2216, 416.0]
     rotation: 0
     state: enabled
 - name: uhd_usrp_source_1
@@ -484,41 +510,73 @@ blocks:
     clock_source6: ''
     clock_source7: ''
     comment: ''
-    dc_offs_enb0: '""'
-    dc_offs_enb1: '""'
-    dc_offs_enb10: '""'
-    dc_offs_enb11: '""'
-    dc_offs_enb12: '""'
-    dc_offs_enb13: '""'
-    dc_offs_enb14: '""'
-    dc_offs_enb15: '""'
-    dc_offs_enb16: '""'
-    dc_offs_enb17: '""'
-    dc_offs_enb18: '""'
-    dc_offs_enb19: '""'
-    dc_offs_enb2: '""'
-    dc_offs_enb20: '""'
-    dc_offs_enb21: '""'
-    dc_offs_enb22: '""'
-    dc_offs_enb23: '""'
-    dc_offs_enb24: '""'
-    dc_offs_enb25: '""'
-    dc_offs_enb26: '""'
-    dc_offs_enb27: '""'
-    dc_offs_enb28: '""'
-    dc_offs_enb29: '""'
-    dc_offs_enb3: '""'
-    dc_offs_enb30: '""'
-    dc_offs_enb31: '""'
-    dc_offs_enb4: '""'
-    dc_offs_enb5: '""'
-    dc_offs_enb6: '""'
-    dc_offs_enb7: '""'
-    dc_offs_enb8: '""'
-    dc_offs_enb9: '""'
+    dc_offs0: 0+0j
+    dc_offs1: 0+0j
+    dc_offs10: 0+0j
+    dc_offs11: 0+0j
+    dc_offs12: 0+0j
+    dc_offs13: 0+0j
+    dc_offs14: 0+0j
+    dc_offs15: 0+0j
+    dc_offs16: 0+0j
+    dc_offs17: 0+0j
+    dc_offs18: 0+0j
+    dc_offs19: 0+0j
+    dc_offs2: 0+0j
+    dc_offs20: 0+0j
+    dc_offs21: 0+0j
+    dc_offs22: 0+0j
+    dc_offs23: 0+0j
+    dc_offs24: 0+0j
+    dc_offs25: 0+0j
+    dc_offs26: 0+0j
+    dc_offs27: 0+0j
+    dc_offs28: 0+0j
+    dc_offs29: 0+0j
+    dc_offs3: 0+0j
+    dc_offs30: 0+0j
+    dc_offs31: 0+0j
+    dc_offs4: 0+0j
+    dc_offs5: 0+0j
+    dc_offs6: 0+0j
+    dc_offs7: 0+0j
+    dc_offs8: 0+0j
+    dc_offs9: 0+0j
+    dc_offs_enb0: default
+    dc_offs_enb1: default
+    dc_offs_enb10: default
+    dc_offs_enb11: default
+    dc_offs_enb12: default
+    dc_offs_enb13: default
+    dc_offs_enb14: default
+    dc_offs_enb15: default
+    dc_offs_enb16: default
+    dc_offs_enb17: default
+    dc_offs_enb18: default
+    dc_offs_enb19: default
+    dc_offs_enb2: default
+    dc_offs_enb20: default
+    dc_offs_enb21: default
+    dc_offs_enb22: default
+    dc_offs_enb23: default
+    dc_offs_enb24: default
+    dc_offs_enb25: default
+    dc_offs_enb26: default
+    dc_offs_enb27: default
+    dc_offs_enb28: default
+    dc_offs_enb29: default
+    dc_offs_enb3: default
+    dc_offs_enb30: default
+    dc_offs_enb31: default
+    dc_offs_enb4: default
+    dc_offs_enb5: default
+    dc_offs_enb6: default
+    dc_offs_enb7: default
+    dc_offs_enb8: default
+    dc_offs_enb9: default
     dev_addr: '""'
     dev_args: '""'
-    gain0: '70'
+    gain0: '1'
     gain1: '0'
     gain10: '0'
     gain11: '0'
@@ -550,38 +608,102 @@ blocks:
     gain7: '0'
     gain8: '0'
     gain9: '0'
-    iq_imbal_enb0: '""'
-    iq_imbal_enb1: '""'
-    iq_imbal_enb10: '""'
-    iq_imbal_enb11: '""'
-    iq_imbal_enb12: '""'
-    iq_imbal_enb13: '""'
-    iq_imbal_enb14: '""'
-    iq_imbal_enb15: '""'
-    iq_imbal_enb16: '""'
-    iq_imbal_enb17: '""'
-    iq_imbal_enb18: '""'
-    iq_imbal_enb19: '""'
-    iq_imbal_enb2: '""'
-    iq_imbal_enb20: '""'
-    iq_imbal_enb21: '""'
-    iq_imbal_enb22: '""'
-    iq_imbal_enb23: '""'
-    iq_imbal_enb24: '""'
-    iq_imbal_enb25: '""'
-    iq_imbal_enb26: '""'
-    iq_imbal_enb27: '""'
-    iq_imbal_enb28: '""'
-    iq_imbal_enb29: '""'
-    iq_imbal_enb3: '""'
-    iq_imbal_enb30: '""'
-    iq_imbal_enb31: '""'
-    iq_imbal_enb4: '""'
-    iq_imbal_enb5: '""'
-    iq_imbal_enb6: '""'
-    iq_imbal_enb7: '""'
-    iq_imbal_enb8: '""'
-    iq_imbal_enb9: '""'
+    gain_type0: normalized
+    gain_type1: default
+    gain_type10: default
+    gain_type11: default
+    gain_type12: default
+    gain_type13: default
+    gain_type14: default
+    gain_type15: default
+    gain_type16: default
+    gain_type17: default
+    gain_type18: default
+    gain_type19: default
+    gain_type2: default
+    gain_type20: default
+    gain_type21: default
+    gain_type22: default
+    gain_type23: default
+    gain_type24: default
+    gain_type25: default
+    gain_type26: default
+    gain_type27: default
+    gain_type28: default
+    gain_type29: default
+    gain_type3: default
+    gain_type30: default
+    gain_type31: default
+    gain_type4: default
+    gain_type5: default
+    gain_type6: default
+    gain_type7: default
+    gain_type8: default
+    gain_type9: default
+    iq_imbal0: 0+0j
+    iq_imbal1: 0+0j
+    iq_imbal10: 0+0j
+    iq_imbal11: 0+0j
+    iq_imbal12: 0+0j
+    iq_imbal13: 0+0j
+    iq_imbal14: 0+0j
+    iq_imbal15: 0+0j
+    iq_imbal16: 0+0j
+    iq_imbal17: 0+0j
+    iq_imbal18: 0+0j
+    iq_imbal19: 0+0j
+    iq_imbal2: 0+0j
+    iq_imbal20: 0+0j
+    iq_imbal21: 0+0j
+    iq_imbal22: 0+0j
+    iq_imbal23: 0+0j
+    iq_imbal24: 0+0j
+    iq_imbal25: 0+0j
+    iq_imbal26: 0+0j
+    iq_imbal27: 0+0j
+    iq_imbal28: 0+0j
+    iq_imbal29: 0+0j
+    iq_imbal3: 0+0j
+    iq_imbal30: 0+0j
+    iq_imbal31: 0+0j
+    iq_imbal4: 0+0j
+    iq_imbal5: 0+0j
+    iq_imbal6: 0+0j
+    iq_imbal7: 0+0j
+    iq_imbal8: 0+0j
+    iq_imbal9: 0+0j
+    iq_imbal_enb0: default
+    iq_imbal_enb1: default
+    iq_imbal_enb10: default
+    iq_imbal_enb11: default
+    iq_imbal_enb12: default
+    iq_imbal_enb13: default
+    iq_imbal_enb14: default
+    iq_imbal_enb15: default
+    iq_imbal_enb16: default
+    iq_imbal_enb17: default
+    iq_imbal_enb18: default
+    iq_imbal_enb19: default
+    iq_imbal_enb2: default
+    iq_imbal_enb20: default
+    iq_imbal_enb21: default
+    iq_imbal_enb22: default
+    iq_imbal_enb23: default
+    iq_imbal_enb24: default
+    iq_imbal_enb25: default
+    iq_imbal_enb26: default
+    iq_imbal_enb27: default
+    iq_imbal_enb28: default
+    iq_imbal_enb29: default
+    iq_imbal_enb3: default
+    iq_imbal_enb30: default
+    iq_imbal_enb31: default
+    iq_imbal_enb4: default
+    iq_imbal_enb5: default
+    iq_imbal_enb6: default
+    iq_imbal_enb7: default
+    iq_imbal_enb8: default
+    iq_imbal_enb9: default
     lo_export0: 'False'
     lo_export1: 'False'
     lo_export10: 'False'
@@ -649,38 +771,6 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '0'
     nchan: '1'
-    norm_gain0: 'False'
-    norm_gain1: 'False'
-    norm_gain10: 'False'
-    norm_gain11: 'False'
-    norm_gain12: 'False'
-    norm_gain13: 'False'
-    norm_gain14: 'False'
-    norm_gain15: 'False'
-    norm_gain16: 'False'
-    norm_gain17: 'False'
-    norm_gain18: 'False'
-    norm_gain19: 'False'
-    norm_gain2: 'False'
-    norm_gain20: 'False'
-    norm_gain21: 'False'
-    norm_gain22: 'False'
-    norm_gain23: 'False'
-    norm_gain24: 'False'
-    norm_gain25: 'False'
-    norm_gain26: 'False'
-    norm_gain27: 'False'
-    norm_gain28: 'False'
-    norm_gain29: 'False'
-    norm_gain3: 'False'
-    norm_gain30: 'False'
-    norm_gain31: 'False'
-    norm_gain4: 'False'
-    norm_gain5: 'False'
-    norm_gain6: 'False'
-    norm_gain7: 'False'
-    norm_gain8: 'False'
-    norm_gain9: 'False'
     num_mboards: '1'
     otw: ''
     rx_agc0: Default
@@ -715,7 +805,7 @@ blocks:
     rx_agc7: Default
     rx_agc8: Default
     rx_agc9: Default
-    samp_rate: samp_rate_0
+    samp_rate: samp_rate
     sd_spec0: ''
     sd_spec1: ''
     sd_spec2: ''
@@ -725,9 +815,10 @@ blocks:
     sd_spec6: ''
     sd_spec7: ''
     show_lo_controls: 'False'
+    start_time: '-1.0'
     stream_args: ''
     stream_chans: '[]'
-    sync: sync
+    sync: pc_clock
     time_source0: ''
     time_source1: ''
     time_source2: ''
@@ -741,7 +832,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [352, 416.0]
+    coordinate: [344, 420.0]
     rotation: 0
     state: true
 
@@ -751,12 +842,13 @@ connections:
 - [Control_Frecuencia, Frec_out, uhd_usrp_source_1, command]
 - [blocks_complex_to_mag_squared_0, '0', blocks_nlog10_ff_0, '0']
 - [blocks_multiply_const_xx_0, '0', blocks_complex_to_mag_squared_0, '0']
-- [blocks_nlog10_ff_0, '0', CSV, '0']
-- [blocks_nlog10_ff_0, '0', blocks_file_sink_0, '0']
-- [blocks_nlog10_ff_0, '0', qtgui_vector_sink_f_0, '0']
+- [blocks_nlog10_ff_0, '0', blocks_throttle2_0, '0']
 - [blocks_stream_to_vector_0, '0', fft_vxx_0, '0']
+- [blocks_throttle2_0, '0', CSV, '0']
+- [blocks_throttle2_0, '0', qtgui_vector_sink_f_0, '0']
 - [fft_vxx_0, '0', blocks_multiply_const_xx_0, '0']
 - [uhd_usrp_source_1, '0', blocks_stream_to_vector_0, '0']
 
 metadata:
   file_format: 1
+  grc_version: 3.10.8.0

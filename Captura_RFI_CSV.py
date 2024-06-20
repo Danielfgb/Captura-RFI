@@ -1,18 +1,34 @@
+import os
 import csv
 import numpy as np
 from gnuradio import gr
 import pmt
+from datetime import datetime
 
 class CSVWriterBlock(gr.sync_block):
-    
-    def __init__(self, filename="output.csv"):
+
+    def __init__(self, Filename_csv="CSV_Salida"):
         gr.sync_block.__init__(
             self,
             name="CSV Writer Block",
-            in_sig=[(np.float32, 1024)],  # Tipo de datos de entrada (float) y tamaño de bloque (1024)
+            in_sig=[(np.float32, 1024)],  # Tipo de datos de entrada (float32) y tamaño de bloque (1024)
             out_sig=None,
         )
-        self.filename = filename
+
+        # Define la direccion donde se guarda el csv
+        output_dir = "Salida"
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+
+        # Genera dia-mes-año_hora-min-s para el nombre del archivo csv
+        now = datetime.now()
+        date_time_str = now.strftime("%d-%m-%Y_%H-%M-%S")
+
+        # Construye el nombre del archivo
+        filename = f"{Filename_csv}_{date_time_str}.csv"
+        self.filename = os.path.join(output_dir, filename)
+        print(f"-- Medición guardada en: {self.filename} --")  
+
         self.file = open(self.filename, "w", newline="")
         self.writer = csv.writer(self.file)
         self.prev_freq_value = None  # Valor de frecuencia anterior
