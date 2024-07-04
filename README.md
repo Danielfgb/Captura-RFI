@@ -19,6 +19,9 @@ Un medidor de RFI es un dispositivo diseñado para evaluar la presencia y la int
 
 ## Instrucciones de Uso:
 
+Para usar el programa, lo único que se requiere es tener GNU Radio, preferiblemente versiones superiores a la 3.8. Abra el programa llamado [**Captura_RFI.grc**](/tree/main/Captura_RFI.grc). Al iniciar el programa correctamente, los demás códigos se generarán automáticamente: [**Captura_RFI.py**](/tree/main/Captura_RFI.py), [**Captura_RFI_Control_Frecuencia.py**](/tree/main/Captura_RFI_Control_Frecuencia.py) y [**Captura_RFI_CSV.py**](/tree/main/Captura_RFI_CSV.py). Además, se requiere el archivo [**Tratado_Datos.py**](/tree/main/Tratado_Datos.py), que se encarga del posprocesamiento, y el archivo [**Visualizacion_Datos.py**](/tree/main/Visualizacion_Datos.py), que se encarga de visualizar y generar los reportes finales.
+
+
 La adquisición de datos se divide en muestras como se observa en siguiente la imagen:
 
 ![Medidor](./img/Diagrama%20medidor%20.png)
