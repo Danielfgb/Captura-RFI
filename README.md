@@ -38,6 +38,6 @@ Esto es debido a que la tarjeta USRP cuenta con un ancho de banda limitado de 20
 
 3. Adquisición: Al ejecutar el programa desde GNU Radio, se visualizará en tiempo real la señal de RF que está siendo captada, mostrando los diferentes saltos de frecuencia que se están realizando. Para detener la captura de datos y finalizar la grabación, se debe cerrar la ventana del programa en GNU Radio. Al hacer esto, el programa generará automáticamente un archivo csv en la carpeta correspondiente, con el nombre que incluye la fecha y hora del inicio de la captura. Este archivo csv contendrá todos los datos de potencia registrados durante la sesión.
 
-4. archivo generado 
+4. Pos-procesamiento: Este código realiza el posprocesamiento de datos de potencia capturados y guardados en un archivo CSV. Primero, carga y limpia los datos eliminando valores nulos y específicos. Luego, divide los datos en grupos basados en cambios de frecuencia y guarda estos grupos en archivos CSV individuales. Posteriormente, transpone los datos para reorganizarlos, filtra las columnas necesarias, concatena los archivos por muestra, ajusta las frecuencias y calcula promedios y máximos de dB para cada frecuencia. Finalmente, los resultados se guardan en una carpeta específica con archivos CSV de promedios y máximos
 
 5. 
