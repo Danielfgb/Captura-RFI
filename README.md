@@ -2,19 +2,20 @@
 
 ## Descripción:  
 
-Este repositorio contiene el desarrollo de un Medidor Autónomo de Interferencia de Radiofrecuencia (RFI) con el propósito facilitar la selección de sitios idóneos y la caracterización del RFI para el establecimiento exitoso de un radiotelescopio de baja frecuencia en Colombia.
+Este repositorio contiene el desarrollo de un Medidor Autónomo de Interferencia de Radiofrecuencia (RFI) con el propósito facilitar la selección de sitios idóneos y la caracterización del RFI.
 
 Un medidor de RFI es un dispositivo diseñado para evaluar la presencia y la intensidad de las interferencias electromagnéticas en el espectro de radiofrecuencia. Estas interferencias, generadas por fuentes artificiales como dispositivos electrónicos, comunicaciones inalámbricas y otras emisiones no deseadas, pueden afectar significativamente las observaciones radio astronómicas. El medidor de RFI identifica y cuantifica estas interferencias, permitiendo la caracterización del entorno electromagnético.
 
 ## Contenido del repositorio:
 
-[1. Salida:](/Salida/) Carpeta que contiene los datos generados en formato .csv con el nombre de "CSV_Salida.csv" por el programa [Captura_RFI.grc](/Captura_RFI.grc) en esta carpeta también se encuentra el código encargado del pos-procesamiento con el nombre de [Tratado_datos.py](/Salida/Tratado_datos.py) de la cual se encuentran dos versiones una desarrollada en python y otra con el mismo nombre en Jupyter.
 
-[2. GNU-RADIO: ](/Captura_RFI.grc) Programa desarrollado en GNU-Radio para la adquisición, registro y procesamiento de las señales de RF.
+[1. Salida:](/Salida/) Carpeta que contiene los datos generados en formato .csv con el nombre de "CSV_Salida_d-m-Y_H-M-S.csv" por el programa [Captura_RFI.grc](/Captura_RFI.grc). Este nombre incluye la fecha y hora (día, mes, año, hora, minuto y segundo) para facilitar el seguimiento de las muestras tomadas. Dentro de esta carpeta, se crea una sub-carpeta llamada **"Muestras"** seguida del mismo nombre del archivo csv, y en ella se guardan las muestras ya tratadas de dicho archivo. También se crea otra sub-carpeta llamada **"Resultados"** seguida del nombre del mismo csv, donde se almacena el posprocesamiento junto con un archivo csv que contiene dos datos resultantes y relevantes. En esta carpeta también se encuentra el código encargado del pos-procesamiento con el nombre de [Tratado_datos.py](/Salida/Tratado_Datos.py), del cual existen dos versiones: una desarrollada en Python y otra con el mismo nombre en Jupyter.
 
-[3. Control frecuencia: ](/Control_Frecuencia.py) Código desarrollado para el cambio de frecuencia en la tarjeta USRP B200 mediante "Polymorphic Types" (PMT).
+[2. GNU-RADIO: ](/Captura_RFI.grc) Programa desarrollado en GNU-Radio para la adquisición, registro y procesamiento de las señales de RF. Al iniciar el programa por primera vez, se generarán tres códigos:
 
-[4. CSV: ](/CSV.py) Código desarrollado para el guardado de los datos en un archivo CSV.
+- [**Captura_RFI.py**](/Captura_RFI.py): Este es el archivo general que contiene todo lo del programa.
+- [**Captura_RFI_Control_Frecuencia.py**](/Captura_RFI_Control_Frecuencia.py): Código encargado de hacer el salto de frecuencia y desarrollado para el cambio de frecuencia en la tarjeta USRP B200 mediante "Polymorphic Types" (PMT).
+- [**Captura_RFI_CSV.py**](/Captura_RFI_CSV.py): Este es el encargado de guardar en un archivo csv los datos de potencia tomados por la USRP y lo guardará con el nombre de Captura_RFI_CSV.py.
 
 ## Instrucciones de Uso:
 
