@@ -141,7 +141,7 @@ def calcular_resultados(carpeta_entrada, parte_fecha):
     archivos_csv = [archivo for archivo in os.listdir(carpeta_entrada) if archivo.endswith('.csv')]
     archivos_csv.sort()
     if len(archivos_csv) < 2:
-        print("Deben existir al menos dos archivos CSV en la carpeta para calcular promedios y máximos.")
+        print("Deben existir al menos dos archivos CSV en la carpeta para calcular los resultados.")
     else:
         primer_archivo = pd.read_csv(os.path.join(carpeta_entrada, archivos_csv[0]))
         num_filas = len(primer_archivo)
@@ -163,8 +163,11 @@ def calcular_resultados(carpeta_entrada, parte_fecha):
         print(f"Archivos de resultados guardados en '{ruta_resultados}'")
 
 def main(ruta_archivo, carpeta_salida, filas_por_grupo):
+
     Carga_Datos, parte_fecha = cargar_datos(ruta_archivo)
     Carga_Datos = tratar_datos(Carga_Datos)
+    carpeta_salida = carpeta_salida + "_" + parte_fecha
+
     dividir_y_guardar_grupos(Carga_Datos, carpeta_salida)
     limpiar_ram(locals())
     transponer_datos(carpeta_salida, filas_por_grupo)
@@ -175,7 +178,7 @@ def main(ruta_archivo, carpeta_salida, filas_por_grupo):
     calcular_resultados(carpeta_salida, parte_fecha)
 
 if __name__ == "__main__":
-    ruta_archivo = "ruta/del/archivo.csv"  # Reemplaza con la ruta del archivo CSV
-    carpeta_salida = "ruta/de/salida"      # Reemplaza con la ruta de la carpeta de salida
-    filas_por_grupo = 5                    # Reemplaza con el número de filas por grupo
+    ruta_archivo = r"C:\Users\dfgom\OneDrive\Escritorio\USRP\Pruebas_Medidor_RFI\Salida\CSV_Salida_19-06-2024_16-46-34.csv"  # Reemplaza con la ruta del archivo CSV
+    carpeta_salida = 'Muestras'      # Reemplaza con la ruta de la carpeta de salida
+    filas_por_grupo = 1024                    # Reemplaza con el número de filas por grupo
     main(ruta_archivo, carpeta_salida, filas_por_grupo)

@@ -19,7 +19,7 @@ Un medidor de RFI es un dispositivo diseñado para evaluar la presencia y la int
 
 ## Instrucciones de Uso:
 
-Para usar el programa, lo único que se requiere es tener GNU Radio, preferiblemente versiones superiores a la 3.8. Abra el programa llamado [**Captura_RFI.grc**](/tree/main/Captura_RFI.grc). Al iniciar el programa correctamente, los demás códigos se generarán automáticamente: [**Captura_RFI.py**](/tree/main/Captura_RFI.py), [**Captura_RFI_Control_Frecuencia.py**](/tree/main/Captura_RFI_Control_Frecuencia.py) y [**Captura_RFI_CSV.py**](/tree/main/Captura_RFI_CSV.py). Además, se requiere el archivo [**Tratado_Datos.py**](/tree/main/Tratado_Datos.py), que se encarga del posprocesamiento, y el archivo [**Visualizacion_Datos.py**](/tree/main/Visualizacion_Datos.py), que se encarga de visualizar y generar los reportes finales.
+Para usar el programa, lo único que se requiere es tener GNU Radio, preferiblemente versiones superiores a la 3.8. Abra el programa llamado [**Captura_RFI.grc**](/Captura_RFI.grc). Al iniciar el programa correctamente, los demás códigos se generarán automáticamente: [**Captura_RFI.py**](/Captura_RFI.py), [**Captura_RFI_Control_Frecuencia.py**](/Captura_RFI_Control_Frecuencia.py) y [**Captura_RFI_CSV.py**](/Captura_RFI_CSV.py). Además, se requiere el archivo [**Tratado_Datos.py**](/Tratado_Datos.py), que se encarga del posprocesamiento, y el archivo [**Visualizacion_Datos.py**](/Visualizacion_Datos.py), que se encarga de visualizar y generar los reportes finales.
 
 
 La adquisición de datos se divide en muestras como se observa en siguiente la imagen:
@@ -36,7 +36,7 @@ Esto es debido a que la tarjeta USRP cuenta con un ancho de banda limitado de 20
 
     ![Variable](./img/bloc_csv.png)
 
-3. Adquisición: A la hora de realizar la adquisicion de las señales RF se vera en pantalla 
+3. Adquisición: Al ejecutar el programa desde GNU Radio, se visualizará en tiempo real la señal de RF que está siendo captada, mostrando los diferentes saltos de frecuencia que se están realizando. Para detener la captura de datos y finalizar la grabación, se debe cerrar la ventana del programa en GNU Radio. Al hacer esto, el programa generará automáticamente un archivo csv en la carpeta correspondiente, con el nombre que incluye la fecha y hora del inicio de la captura. Este archivo csv contendrá todos los datos de potencia registrados durante la sesión.
 
 4. archivo generado 
 
