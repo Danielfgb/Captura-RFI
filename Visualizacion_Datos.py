@@ -1,18 +1,44 @@
 import tkinter as tk
+from tkinter import filedialog, messagebox
 import os
 import pandas as pd
 import numpy as np
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.widgets import SpanSelector
+import re
 
-#carpeta = r'C:\Users\dfgom\OneDrive\Escritorio\USRP\RFI_Captura\Salida\Resultados'
-carpeta = r'C:\Users\dfgom\OneDrive\Escritorio\USRP\RFI_Captura\Salida\Muestras_19-06-2024_16-46-34'
+# Función para seleccionar la carpeta de salida
+def seleccionar_carpeta():
+    carpeta_seleccionada = filedialog.askdirectory()
+    if carpeta_seleccionada:
+        carpeta_var.set(carpeta_seleccionada)
+        cargar_archivos_csv(carpeta_seleccionada)
 
+# Función para cargar los archivos CSV de las subcarpetas "Muestra" y "Resultados"
+def cargar_archivos_csv(carpeta):
+    archivos_csv = []
+    regex_muestra = re.compile(r'^Muestra_.+')
+    regex_resultados = re.compile(r'^Resultado_.+')
+    
+    for root, dirs, files in os.walk(carpeta):
+        for dir_name in dirs:
+            if regex_muestra.match(dir_name) or regex_resultados.match(dir_name):
+                subdir_path = os.path.join(root, dir_name)
+                for file in os.listdir(subdir_path):
+                    if file.endswith('.csv'):
+                        relative_path = os.path.relpath(os.path.join(subdir_path, file), carpeta)
+                        archivos_csv.append(relative_path)
+    
+    archivo_var.set("")  # Limpiar la selección anterior
+    archivo_dropdown['menu'].delete(0, 'end')
+    for archivo in archivos_csv:
+        archivo_dropdown['menu'].add_command(label=archivo, command=tk._setit(archivo_var, archivo))
 
 # Función para cargar y mostrar los datos desde un archivo CSV seleccionado
 def cargar_archivo():
     archivo_seleccionado = archivo_var.get()
+    carpeta = carpeta_var.get()
     
     if archivo_seleccionado:
         df = pd.read_csv(os.path.join(carpeta, archivo_seleccionado))
@@ -26,33 +52,24 @@ def cargar_archivo():
         ax1.clear()
         ax1.plot(x, y)
         
-        # Ajustar los límites del eje y según tus necesidades
-        y_min = min(y) - 10
-        y_max = max(y) + 10
+        y_min = min(y) - 5
+        y_max = max(y) + 5
         
         ax1.set_ylim(y_min, y_max)
         ax1.set_title(f'Archivo seleccionado: {archivo_seleccionado}')
         
-        # Actualizar las variables globales x e y
         global x_global, y_global
         x_global = x
         y_global = y
         
-        # Calcular estadísticas
-        maximos = sorted(y, reverse=True)[:90]
+        # Calcular y mostrar el piso de ruido con formato específico
         media = np.mean(y)
-        estadisticas_texto = f"10 valores máximos: {maximos}\nMedia: {media}"
-        estadisticas_label.config(text=estadisticas_texto)
+        media_str = f"{media:.3f} dB"
         
-        # Dibujar línea roja de la media
-        ax1.axhline(y=media, color='red', linestyle='--', label=f'Media: {media}')
+        # Dibujar línea roja con el piso de ruido
+        ax1.axhline(y=media, color='red', linestyle='--', label=f'Piso ruido: {media_str}')
         
-        # Marcar los 10 valores máximos con puntos rojos
-        for valor_maximo in maximos:
-            indice = np.where(y == valor_maximo)[0][0]
-            ax1.plot(x[indice], valor_maximo, 'ro')  # Punto rojo en el máximo
-        
-        ax1.legend()  # Mostrar la leyenda en la gráfica
+        ax1.legend()  
         canvas.draw()
 
 # Función para manejar la selección de una región
@@ -68,30 +85,105 @@ def onselect(xmin, xmax):
         ax2.plot(region_x, region_y)
         ax2.set_xlim(region_x[0], region_x[-1])
         ax2.set_ylim((region_y.min()-5), (region_y.max()+5))
+        
+        # Mostrar los máximos sobre el setpoint 
+        setpoint = float(setpoint_entry.get())
+        encontrar_maximos(setpoint, ax2)
+        
         canvas.draw()
+
+# Función para encontrar y mostrar máximos por encima de un setpoint
+def encontrar_maximos(setpoint, axis):
+    global x_global, y_global
+    
+    if len(x_global) == 0 or len(y_global) == 0:
+        return
+    
+    maximos = []
+    for i, valor in enumerate(y_global):
+        if valor > setpoint:
+            maximos.append((x_global[i], valor))
+    
+    if maximos:
+        x_maximos, y_maximos = zip(*maximos)
+        axis.plot(x_maximos, y_maximos, 'go', label=f'Máximos > {setpoint} dB')
+        axis.legend()
+        canvas.draw()
+
+# Función para guardar los máximos encontrados en un archivo CSV cuando se presiona "Generar Reporte"
+def guardar_reporte():
+    setpoint = float(setpoint_entry.get())
+    global x_global, y_global
+    
+    if len(x_global) == 0 or len(y_global) == 0:
+        messagebox.showerror("Error", "No hay datos para generar el reporte.")
+        return
+    
+    maximos = []
+    for i, valor in enumerate(y_global):
+        if valor > setpoint:
+            maximos.append((x_global[i], valor))
+    
+    if not maximos:
+        messagebox.showinfo("Información", f"No se encontraron máximos sobre el setpoint {setpoint} dB.")
+        return
+    
+    guardar_path = filedialog.asksaveasfilename(defaultextension=".csv",
+                                                filetypes=[("Archivos CSV", "*.csv")],
+                                                title="Guardar Reporte")
+    if guardar_path:
+        try:
+            df = pd.DataFrame(maximos, columns=["Frecuencia (MHz)", "dB"])
+            df.to_csv(guardar_path, index=False)
+            messagebox.showinfo("Guardado", f"Reporte guardado exitosamente en:\n{guardar_path}")
+        except Exception as e:
+            messagebox.showerror("Error", f"No se pudo guardar el reporte.\nError: {str(e)}")
+
+# Función para actualizar el setpoint desde la interfaz gráfica
+def actualizar_setpoint():
+    try:
+        nuevo_setpoint = float(setpoint_entry.get())
+        encontrar_maximos(nuevo_setpoint, ax1)  # Actualizar también en la gráfica principal (ax1)
+        onselect(ax2.get_xlim()[0], ax2.get_xlim()[1])  # Actualizar en la gráfica ampliada (ax2)
+    except ValueError:
+        messagebox.showerror("Error", "Ingrese un valor numérico válido para el setpoint.")
 
 # Crear la ventana principal
 root = tk.Tk()
 root.title("Generador de Gráficas")
 
-# Obtener la lista de archivos CSV en la carpeta
-archivos_csv = [archivo for archivo in os.listdir(carpeta) if archivo.endswith('.csv')]
+# Crear un botón para seleccionar la carpeta de salida
+seleccionar_carpeta_button = tk.Button(root, text="Seleccionar Carpeta", command=seleccionar_carpeta)
+seleccionar_carpeta_button.pack()
+
+# Variable para almacenar la ruta de la carpeta seleccionada
+carpeta_var = tk.StringVar(root)
 
 # Variable para almacenar el archivo seleccionado
 archivo_var = tk.StringVar(root)
-archivo_var.set(archivos_csv[0] if archivos_csv else "")
 
 # Crear una lista desplegable con los nombres de los archivos
-archivo_dropdown = tk.OptionMenu(root, archivo_var, *archivos_csv)
+archivo_dropdown = tk.OptionMenu(root, archivo_var, "")
 archivo_dropdown.pack()
 
 # Crear un botón para cargar y mostrar los datos del archivo seleccionado
 cargar_button = tk.Button(root, text="Generar Gráfica", command=cargar_archivo)
 cargar_button.pack()
 
-# Etiqueta para mostrar estadísticas
-estadisticas_label = tk.Label(root, text="")
-estadisticas_label.pack()  # Empaquetamos la etiqueta en la ventana principal
+# Crear un campo de entrada para el setpoint
+setpoint_label = tk.Label(root, text="Setpoint:")
+setpoint_label.pack()
+
+setpoint_entry = tk.Entry(root)
+setpoint_entry.pack()
+
+# Crear un botón para actualizar el setpoint
+actualizar_setpoint_button = tk.Button(root, text="Actualizar Setpoint", command=actualizar_setpoint)
+actualizar_setpoint_button.pack()
+
+# Crear un botón para generar el reporte
+generar_reporte_button = tk.Button(root, text="Generar Reporte", command=guardar_reporte)
+generar_reporte_button.pack()
 
 # Crear un lienzo para mostrar la gráfica generada
 fig = Figure(figsize=(18, 12))
@@ -114,9 +206,7 @@ span = SpanSelector(
     drag_from_anywhere=True
 )
 
-# Variables globales para x e y
 x_global = []
 y_global = []
 
-# Mostrar la ventana principal
 root.mainloop()

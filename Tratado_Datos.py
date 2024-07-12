@@ -137,7 +137,7 @@ def filtrar_muestras_frecuencias(carpeta_entrada):
             result_df.to_csv(archivo_completo, index=False)
 
 def calcular_resultados(carpeta_entrada, parte_fecha):
-    ruta_resultados = 'Resultados_' + parte_fecha
+    ruta_resultados = os.path.join(carpeta_entrada, 'Resultado_' + parte_fecha)
     archivos_csv = [archivo for archivo in os.listdir(carpeta_entrada) if archivo.endswith('.csv')]
     archivos_csv.sort()
     if len(archivos_csv) < 2:
@@ -145,7 +145,6 @@ def calcular_resultados(carpeta_entrada, parte_fecha):
     else:
         primer_archivo = pd.read_csv(os.path.join(carpeta_entrada, archivos_csv[0]))
         num_filas = len(primer_archivo)
-        promedios = primer_archivo.copy()
         maximos = primer_archivo.copy()
         for archivo_csv in archivos_csv[1:-1]:
             ruta_archivo = os.path.join(carpeta_entrada, archivo_csv)
@@ -153,32 +152,39 @@ def calcular_resultados(carpeta_entrada, parte_fecha):
             if len(df) != num_filas:
                 print(f"El archivo {archivo_csv} no tiene el mismo tamaño que los archivos anteriores. Se omitirá.")
             else:
-                promedios['dB'] += df['dB']
                 maximos['dB'] = np.maximum(maximos['dB'], df['dB'])
-        promedios['dB'] /= (len(archivos_csv) - 1)
         if not os.path.exists(ruta_resultados):
             os.makedirs(ruta_resultados)
-        promedios.to_csv(os.path.join(ruta_resultados, 'Promedios.csv'), index=False)
-        maximos.to_csv(os.path.join(ruta_resultados, 'Maximos.csv'), index=False)
-        print(f"Archivos de resultados guardados en '{ruta_resultados}'")
+        maximos.to_csv(os.path.join(ruta_resultados, 'Máximos.csv'), index=False)
+        print(f"Archivo de resultados guardado en '{ruta_resultados}'")
 
 def main(ruta_archivo, carpeta_salida, filas_por_grupo):
 
     Carga_Datos, parte_fecha = cargar_datos(ruta_archivo)
     Carga_Datos = tratar_datos(Carga_Datos)
-    carpeta_salida = carpeta_salida + "_" + parte_fecha
+    
+    # Obtener el directorio actual del programa
+    directorio_actual = os.path.dirname(os.path.realpath(__file__))
+    
+    # Crear carpeta "Salida" si no existe en el directorio actual
+    carpeta_principal = os.path.join(directorio_actual, 'Salida')
+    if not os.path.exists(carpeta_principal):
+        os.makedirs(carpeta_principal)
 
-    dividir_y_guardar_grupos(Carga_Datos, carpeta_salida)
+    # Definir la carpeta de salida completa
+    carpeta_salida_completa = os.path.join(carpeta_principal, carpeta_salida + "_" + parte_fecha)
+
+    dividir_y_guardar_grupos(Carga_Datos, carpeta_salida_completa)
     limpiar_ram(locals())
-    transponer_datos(carpeta_salida, filas_por_grupo)
-    filtrar_datos(carpeta_salida)
-    concatenar_datos(carpeta_salida)
-    asignar_frecuencias(carpeta_salida)
-    filtrar_muestras_frecuencias(carpeta_salida)
-    calcular_resultados(carpeta_salida, parte_fecha)
+    transponer_datos(carpeta_salida_completa, filas_por_grupo)
+    filtrar_datos(carpeta_salida_completa)
+    concatenar_datos(carpeta_salida_completa)
+    asignar_frecuencias(carpeta_salida_completa)
+    filtrar_muestras_frecuencias(carpeta_salida_completa)
+    calcular_resultados(carpeta_salida_completa, parte_fecha)
 
 if __name__ == "__main__":
-    ruta_archivo = r"C:\Users\dfgom\OneDrive\Escritorio\USRP\Pruebas_Medidor_RFI\Salida\CSV_Salida_19-06-2024_16-46-34.csv"  # Reemplaza con la ruta del archivo CSV
-    carpeta_salida = 'Muestras'      # Reemplaza con la ruta de la carpeta de salida
+    ruta_archivo = r"C:\Users\dfgom\OneDrive\Documentos\Git\Captura-RFI\Salida\CSV_Salida_21-06-2024_10-34-23.csv"  # Reemplaza con la ruta del archivo CSV
+    carpeta_salida = 'Muestra'      # Reemplaza con la ruta de la carpeta de salida
     filas_por_grupo = 1024                    # Reemplaza con el número de filas por grupo
     main(ruta_archivo, carpeta_salida, filas_por_grupo)
