@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import os
 import gc # Liberar memoria ram
+import sys
 
 def cargar_datos(ruta_archivo):
     Carga_Datos = pd.read_csv(ruta_archivo)
@@ -151,15 +152,12 @@ def calcular_resultados(carpeta_entrada, parte_fecha):
             df = pd.read_csv(ruta_archivo)
             if len(df) != num_filas:
                 print(f"El archivo {archivo_csv} no tiene el mismo tamaño que los archivos anteriores. Se omitirá.")
-            else:
-                maximos['dB'] = np.maximum(maximos['dB'], df['dB'])
-        if not os.path.exists(ruta_resultados):
-            os.makedirs(ruta_resultados)
-        maximos.to_csv(os.path.join(ruta_resultados, 'Máximos.csv'), index=False)
-        print(f"Archivo de resultados guardado en '{ruta_resultados}'")
+                continue
+            maximos['dB'] = np.maximum(maximos['dB'], df['dB'])
+        maximos.to_csv(ruta_resultados + '.csv', index=False)
+        print(f"Resultados guardados en: {ruta_resultados}.csv")
 
 def main(ruta_archivo, carpeta_salida, filas_por_grupo):
-
     Carga_Datos, parte_fecha = cargar_datos(ruta_archivo)
     Carga_Datos = tratar_datos(Carga_Datos)
     
@@ -184,7 +182,11 @@ def main(ruta_archivo, carpeta_salida, filas_por_grupo):
     calcular_resultados(carpeta_salida_completa, parte_fecha)
 
 if __name__ == "__main__":
-    ruta_archivo = r"C:\Users\dfgom\OneDrive\Documentos\Git\Captura-RFI\Salida\CSV_Salida_21-06-2024_10-34-23.csv"  # Reemplaza con la ruta del archivo CSV
-    carpeta_salida = 'Muestra'      # Reemplaza con la ruta de la carpeta de salida
-    filas_por_grupo = 1024                    # Reemplaza con el número de filas por grupo
+    if len(sys.argv) != 2:
+        print("Uso: python Tratado_Datos.py <ruta_del_archivo_csv>")
+        sys.exit(1)
+
+    ruta_archivo = sys.argv[1]  # Ruta del archivo CSV pasada como argumento
+    carpeta_salida = 'Muestra'  # Reemplaza con la ruta de la carpeta de salida
+    filas_por_grupo = 1024  # Reemplaza con el número de filas por grupo
     main(ruta_archivo, carpeta_salida, filas_por_grupo)
