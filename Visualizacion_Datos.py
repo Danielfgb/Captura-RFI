@@ -6,6 +6,7 @@ import numpy as np
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.widgets import SpanSelector
+import csv
 import re
 
 # Función para seleccionar la carpeta de salida
@@ -128,13 +129,30 @@ def guardar_reporte():
         messagebox.showinfo("Información", f"No se encontraron máximos sobre el setpoint {setpoint} dB.")
         return
     
+    # Obtener información adicional para el reporte
+    nombre_archivo = archivo_var.get()
+    media = np.mean(y_global)
+    
+    # Construir los datos del reporte
+    reporte = []
+    reporte.append(f"Reporte del archivo: {nombre_archivo}")
+    reporte.append(f"Piso de ruido: {media:.3f} dB")
+    reporte.append(f"Setpoint: {setpoint} dB")
+    reporte.append("Valores maximos por encima del setpoint:")
+    reporte.append("Frecuencia (MHz), dB")  # Encabezado de los valores máximos
+    
+    for freq, db in maximos:
+        reporte.append(f"{freq:.2f}, {db:.2f}")
+    
     guardar_path = filedialog.asksaveasfilename(defaultextension=".csv",
                                                 filetypes=[("Archivos CSV", "*.csv")],
                                                 title="Guardar Reporte")
     if guardar_path:
         try:
-            df = pd.DataFrame(maximos, columns=["Frecuencia (MHz)", "dB"])
-            df.to_csv(guardar_path, index=False)
+            with open(guardar_path, 'w', newline='') as file:
+                writer = csv.writer(file)
+                for line in reporte:
+                    writer.writerow([line])
             messagebox.showinfo("Guardado", f"Reporte guardado exitosamente en:\n{guardar_path}")
         except Exception as e:
             messagebox.showerror("Error", f"No se pudo guardar el reporte.\nError: {str(e)}")
