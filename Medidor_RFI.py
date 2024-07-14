@@ -1,89 +1,113 @@
 import os
-import sys
-import subprocess
-import threading
 import shutil
-from tkinter import Tk, Button, Label, filedialog, messagebox
+import threading
+from tkinter import Tk, Button, Label, filedialog, messagebox, ttk
+import Tratado_Datos
+import subprocess
+from queue import Queue
 
-def run_gnu_radio():
-    carpeta_destino = filedialog.askdirectory(title="Seleccionar carpeta de destino")
-    if carpeta_destino:
-        # Ruta del archivo de GNU Radio en el mismo directorio que este script
-        archivo_gnu_radio = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'Captura_RFI_1.0.grc')
-        
-        if os.path.exists(archivo_gnu_radio):
-            # Copiar el archivo a la carpeta seleccionada
-            destino = os.path.join(carpeta_destino, 'Captura_RFI_1.0.grc')
-            shutil.copy(archivo_gnu_radio, destino)
-            messagebox.showinfo("Éxito", f"Archivo {archivo_gnu_radio} copiado a {destino}")
-        else:
-            messagebox.showerror("Error", f"No se encontró el archivo {archivo_gnu_radio}")
+class Application:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Interfaz de Control")
 
-def run_tratado_datos(ruta_archivo_csv):
-    script_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'Tratado_Datos.py')
-    
-    if not os.path.exists(script_path):
-        messagebox.showerror("Error", f"No se encontró el script Tratado_Datos.py en {script_path}")
-        return
+        self.create_widgets()
 
-    def run_script():
-        try:
-            if sys.platform.startswith('win'):
-                # Windows
-                cmd = f'start /wait cmd /c "{sys.executable} {script_path} {ruta_archivo_csv}"'
+    def create_widgets(self):
+        self.lbl_explicativo = Label(self.root, text="Esta interfaz permite controlar diferentes funciones:", justify="left", padx=10, pady=10)
+        self.lbl_explicativo.pack()
+
+        self.btn_install_gnu = Button(self.root, text="Instalar GNU", command=self.install_gnu_radio)
+        self.btn_install_gnu.pack(pady=10)
+
+        self.btn_gnu = Button(self.root, text="GNU", command=self.run_gnu_radio)
+        self.btn_gnu.pack(pady=10)
+
+        self.btn_tratado = Button(self.root, text="Pos-procesamiento", command=self.select_csv_and_run_tratado)
+        self.btn_tratado.pack(pady=10)
+
+        self.btn_visualizacion = Button(self.root, text="Visualización", command=self.run_visualizacion)
+        self.btn_visualizacion.pack(pady=10)
+
+    def run_gnu_radio(self):
+        carpeta_destino = filedialog.askdirectory(title="Seleccionar carpeta de destino")
+        if carpeta_destino:
+            archivo_gnu_radio = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'Captura_RFI_1.0.grc')
+            
+            if os.path.exists(archivo_gnu_radio):
+                destino = os.path.join(carpeta_destino, 'Captura_RFI_1.0.grc')
+                shutil.copy(archivo_gnu_radio, destino)
+                messagebox.showinfo("Éxito", f"Archivo {archivo_gnu_radio} copiado a {destino}")
             else:
-                # macOS / Linux
-                cmd = f'xterm -hold -e "{sys.executable} {script_path} {ruta_archivo_csv}"'
-            subprocess.run(cmd, shell=True)
-            messagebox.showinfo("Éxito", "Tratamiento de datos completado.")
+                messagebox.showerror("Error", f"No se encontró el archivo {archivo_gnu_radio}")
+
+    def run_tratado_datos(self, ruta_archivo_csv, progress_queue):
+        try:
+            Tratado_Datos.main(ruta_archivo_csv, 'Muestra', 1024)
+            progress_queue.put("Éxito")
         except Exception as e:
-            messagebox.showerror("Error", f"Error al ejecutar Tratado_Datos.py: {e}")
+            progress_queue.put(f"Error: {e}")
 
-    threading.Thread(target=run_script).start()
-    messagebox.showinfo("Información", "Tratamiento de datos en progreso. Por favor espera...")
+    def handle_progress(self):
+        message = self.progress_queue.get()
+        if message == "Éxito":
+            if hasattr(self, 'progress_window') and self.progress_window:
+                self.progress_window.destroy()
+            messagebox.showinfo("Éxito", "Tratamiento de datos completado.")
+        else:
+            if hasattr(self, 'progress_window') and self.progress_window:
+                self.progress_window.destroy()
+            messagebox.showerror("Error", f"Error al ejecutar Tratado_Datos.py: {message}")
 
-def select_csv_and_run_tratado():
-    ruta_archivo_csv = filedialog.askopenfilename(filetypes=[("CSV files", "*.csv")])
-    if ruta_archivo_csv:
-        run_tratado_datos(ruta_archivo_csv)
+    def update_progress(self):
+        if hasattr(self, 'progress_bar') and self.progress_bar:
+            self.progress_bar.stop()
+            self.progress_bar.destroy()
+            self.progress_bar = None
+        if hasattr(self, 'progress_label') and self.progress_label:
+            self.progress_label.destroy()
+            self.progress_label = None
 
-def run_visualizacion():
-    script_visualizacion = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Visualizacion_Datos.py")
-    subprocess.Popen([sys.executable, script_visualizacion])
+    def select_csv_and_run_tratado(self):
+        ruta_archivo_csv = filedialog.askopenfilename(filetypes=[("CSV files", "*.csv")])
+        if ruta_archivo_csv:
+            self.progress_queue = Queue()
 
-def install_gnu_radio():
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    ruta_instalador_gnu_radio = os.path.join(script_dir, "GNU_Radio_installer.exe")
-    
-    if os.path.exists(ruta_instalador_gnu_radio):
-        subprocess.Popen(ruta_instalador_gnu_radio, cwd=script_dir)
-    else:
-        messagebox.showerror("Error", "No se encontró el instalador de GNU Radio.")
+            self.progress_window = Tk()
+            self.progress_window.title("Progreso")
+            self.progress_window.geometry("300x100")
 
-root = Tk()
-root.title("Interfaz de Control")
+            self.progress_label = Label(self.progress_window, text="Procesando datos...")
+            self.progress_label.pack(pady=10)
 
-texto_explicativo = """Esta interfaz permite controlar diferentes funciones:
-- 'Instalar GNU' inicia el instalador de GNU Radio si no está instalado.
-- Utiliza el botón 'GNU' para copiar el archivo Captura_RFI_1.0.grc a una carpeta seleccionada.
-- El botón 'Pos-procesamiento' ejecuta Tratado_Datos.py en un archivo CSV seleccionado.
-- 'Visualización' abre Visualizacion_Datos.py.
-"""
-lbl_explicativo = Label(root, text=texto_explicativo, justify="left", padx=10, pady=10)
-lbl_explicativo.pack()
+            self.progress_bar = ttk.Progressbar(self.progress_window, length=200, mode='indeterminate')
+            self.progress_bar.pack(pady=10)
+            self.progress_bar.start()
 
-root.geometry("600x300")  # Ancho x Alto
+            threading.Thread(target=self.run_tratado_datos, args=(ruta_archivo_csv, self.progress_queue)).start()
+            self.check_progress()
 
-btn_install_gnu = Button(root, text="Instalar GNU", command=install_gnu_radio)
-btn_install_gnu.pack(pady=10)
+    def check_progress(self):
+        self.root.after(100, self.check_progress)
+        while not self.progress_queue.empty():
+            self.update_progress()
+            self.handle_progress()
 
-btn_gnu = Button(root, text="GNU", command=run_gnu_radio)
-btn_gnu.pack(pady=10)
+    def run_visualizacion(self):
+        # Importa Visualizacion_Datos solo cuando se vaya a utilizar
+        import Visualizacion_Datos
+        Visualizacion_Datos.main()
 
-btn_tratado = Button(root, text="Pos-procesamiento", command=select_csv_and_run_tratado)
-btn_tratado.pack(pady=10)
+    def install_gnu_radio(self):
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        ruta_instalador_gnu_radio = os.path.join(script_dir, "GNU_Radio_installer.exe")
+        
+        if os.path.exists(ruta_instalador_gnu_radio):
+            subprocess.Popen(ruta_instalador_gnu_radio, cwd=script_dir)
+        else:
+            messagebox.showerror("Error", "No se encontró el instalador de GNU Radio.")
 
-btn_visualizacion = Button(root, text="Visualización", command=run_visualizacion)
-btn_visualizacion.pack(pady=10)
-
-root.mainloop()
+if __name__ == "__main__":
+    root = Tk()
+    app = Application(root)
+    root.mainloop()

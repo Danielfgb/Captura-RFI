@@ -16,25 +16,31 @@ def seleccionar_carpeta():
         carpeta_var.set(carpeta_seleccionada)
         cargar_archivos_csv(carpeta_seleccionada)
 
-# Función para cargar los archivos CSV de las subcarpetas "Muestra" y "Resultados"
+# Función para cargar los archivos CSV de las subcarpetas recursivamente
 def cargar_archivos_csv(carpeta):
     archivos_csv = []
     regex_muestra = re.compile(r'^Muestra_.+')
     regex_resultados = re.compile(r'^Resultado_.+')
-    
-    for root, dirs, files in os.walk(carpeta):
-        for dir_name in dirs:
-            if regex_muestra.match(dir_name) or regex_resultados.match(dir_name):
+
+    # Función interna recursiva para buscar archivos CSV
+    def buscar_archivos_csv(directorio):
+        for root, dirs, files in os.walk(directorio):
+            for dir_name in dirs:
                 subdir_path = os.path.join(root, dir_name)
                 for file in os.listdir(subdir_path):
                     if file.endswith('.csv'):
                         relative_path = os.path.relpath(os.path.join(subdir_path, file), carpeta)
                         archivos_csv.append(relative_path)
-    
+
+    # Buscar archivos en la carpeta principal y sus subcarpetas
+    buscar_archivos_csv(carpeta)
+
     archivo_var.set("")  # Limpiar la selección anterior
     archivo_dropdown['menu'].delete(0, 'end')
     for archivo in archivos_csv:
         archivo_dropdown['menu'].add_command(label=archivo, command=tk._setit(archivo_var, archivo))
+
+#
 
 # Función para cargar y mostrar los datos desde un archivo CSV seleccionado
 def cargar_archivo():
@@ -129,33 +135,48 @@ def guardar_reporte():
         messagebox.showinfo("Información", f"No se encontraron máximos sobre el setpoint {setpoint} dB.")
         return
     
-    # Obtener información adicional para el reporte
+    # Obtener el nombre del archivo seleccionado
     nombre_archivo = archivo_var.get()
-    media = np.mean(y_global)
+    if not nombre_archivo:
+        messagebox.showerror("Error", "No se ha seleccionado ningún archivo.")
+        return
+    
+    # Obtener solo el nombre base del archivo sin la ruta completa
+    nombre_base = os.path.basename(nombre_archivo)
+    
+    # Construir el nombre del reporte con el formato deseado
+    nombre_reporte = f"Reporte_{nombre_base}"
+    
+    # Obtener la carpeta donde se encuentra el archivo seleccionado
+    carpeta_archivo = os.path.dirname(os.path.join(carpeta_var.get(), nombre_archivo))
+    
+    # Construir la ruta completa para guardar el reporte en la misma carpeta
+    guardar_path = os.path.join(carpeta_archivo, nombre_reporte)
+
+    print(nombre_reporte)
+    print(guardar_path)
     
     # Construir los datos del reporte
+    media = np.mean(y_global)
     reporte = []
     reporte.append(f"Reporte del archivo: {nombre_archivo}")
     reporte.append(f"Piso de ruido: {media:.3f} dB")
     reporte.append(f"Setpoint: {setpoint} dB")
-    reporte.append("Valores maximos por encima del setpoint:")
+    reporte.append("Valores máximos por encima del setpoint:")
     reporte.append("Frecuencia (MHz), dB")  # Encabezado de los valores máximos
     
     for freq, db in maximos:
         reporte.append(f"{freq:.2f}, {db:.2f}")
     
-    guardar_path = filedialog.asksaveasfilename(defaultextension=".csv",
-                                                filetypes=[("Archivos CSV", "*.csv")],
-                                                title="Guardar Reporte")
-    if guardar_path:
-        try:
-            with open(guardar_path, 'w', newline='') as file:
-                writer = csv.writer(file)
-                for line in reporte:
-                    writer.writerow([line])
-            messagebox.showinfo("Guardado", f"Reporte guardado exitosamente en:\n{guardar_path}")
-        except Exception as e:
-            messagebox.showerror("Error", f"No se pudo guardar el reporte.\nError: {str(e)}")
+    try:
+        with open(guardar_path, 'w', newline='') as file:
+            writer = csv.writer(file)
+            for line in reporte:
+                writer.writerow([line])
+        messagebox.showinfo("Guardado", f"Reporte guardado exitosamente en:\n{guardar_path}")
+    except Exception as e:
+        messagebox.showerror("Error", f"No se pudo guardar el reporte.\nError: {str(e)}")
+
 
 # Función para actualizar el setpoint desde la interfaz gráfica
 def actualizar_setpoint():

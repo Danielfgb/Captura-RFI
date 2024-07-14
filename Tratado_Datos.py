@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import os
-import gc # Liberar memoria ram
+import gc  # Liberar memoria ram
 import sys
 
 def cargar_datos(ruta_archivo):
@@ -138,7 +138,12 @@ def filtrar_muestras_frecuencias(carpeta_entrada):
             result_df.to_csv(archivo_completo, index=False)
 
 def calcular_resultados(carpeta_entrada, parte_fecha):
-    ruta_resultados = os.path.join(carpeta_entrada, 'Resultado_' + parte_fecha)
+    ruta_resultado_final = os.path.join(carpeta_entrada, 'Resultados_' + parte_fecha)
+    if not os.path.exists(ruta_resultado_final):
+        os.makedirs(ruta_resultado_final)
+        
+    ruta_resultado_final = os.path.join(ruta_resultado_final, 'Resultado_' + parte_fecha + '.csv')
+    
     archivos_csv = [archivo for archivo in os.listdir(carpeta_entrada) if archivo.endswith('.csv')]
     archivos_csv.sort()
     if len(archivos_csv) < 2:
@@ -154,8 +159,8 @@ def calcular_resultados(carpeta_entrada, parte_fecha):
                 print(f"El archivo {archivo_csv} no tiene el mismo tamaño que los archivos anteriores. Se omitirá.")
                 continue
             maximos['dB'] = np.maximum(maximos['dB'], df['dB'])
-        maximos.to_csv(ruta_resultados + '.csv', index=False)
-        print(f"Resultados guardados en: {ruta_resultados}.csv")
+        maximos.to_csv(ruta_resultado_final, index=False)
+        print(f"Resultados guardados en: {ruta_resultado_final}")
 
 def main(ruta_archivo, carpeta_salida, filas_por_grupo):
     Carga_Datos, parte_fecha = cargar_datos(ruta_archivo)
@@ -187,6 +192,6 @@ if __name__ == "__main__":
         sys.exit(1)
 
     ruta_archivo = sys.argv[1]  # Ruta del archivo CSV pasada como argumento
-    carpeta_salida = 'Muestra'  # Reemplaza con la ruta de la carpeta de salida
+    carpeta_salida = 'Muestra'  # Reemplaza con el nombre base de la carpeta de salida
     filas_por_grupo = 1024  # Reemplaza con el número de filas por grupo
     main(ruta_archivo, carpeta_salida, filas_por_grupo)
