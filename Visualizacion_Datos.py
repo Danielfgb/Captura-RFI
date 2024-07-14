@@ -16,13 +16,12 @@ def seleccionar_carpeta():
         carpeta_var.set(carpeta_seleccionada)
         cargar_archivos_csv(carpeta_seleccionada)
 
-# Función para cargar los archivos CSV de las subcarpetas recursivamente
+# Función para cargar los archivos CSV de las subcarpetas
 def cargar_archivos_csv(carpeta):
     archivos_csv = []
     regex_muestra = re.compile(r'^Muestra_.+')
     regex_resultados = re.compile(r'^Resultado_.+')
 
-    # Función interna recursiva para buscar archivos CSV
     def buscar_archivos_csv(directorio):
         for root, dirs, files in os.walk(directorio):
             for dir_name in dirs:
@@ -32,15 +31,12 @@ def cargar_archivos_csv(carpeta):
                         relative_path = os.path.relpath(os.path.join(subdir_path, file), carpeta)
                         archivos_csv.append(relative_path)
 
-    # Buscar archivos en la carpeta principal y sus subcarpetas
     buscar_archivos_csv(carpeta)
 
     archivo_var.set("")  # Limpiar la selección anterior
     archivo_dropdown['menu'].delete(0, 'end')
     for archivo in archivos_csv:
         archivo_dropdown['menu'].add_command(label=archivo, command=tk._setit(archivo_var, archivo))
-
-#
 
 # Función para cargar y mostrar los datos desde un archivo CSV seleccionado
 def cargar_archivo():
@@ -135,27 +131,19 @@ def guardar_reporte():
         messagebox.showinfo("Información", f"No se encontraron máximos sobre el setpoint {setpoint} dB.")
         return
     
-    # Obtener el nombre del archivo seleccionado
     nombre_archivo = archivo_var.get()
     if not nombre_archivo:
         messagebox.showerror("Error", "No se ha seleccionado ningún archivo.")
         return
     
-    # Obtener solo el nombre base del archivo sin la ruta completa
     nombre_base = os.path.basename(nombre_archivo)
     
     # Construir el nombre del reporte con el formato deseado
     nombre_reporte = f"Reporte_{nombre_base}"
     
-    # Obtener la carpeta donde se encuentra el archivo seleccionado
     carpeta_archivo = os.path.dirname(os.path.join(carpeta_var.get(), nombre_archivo))
-    
-    # Construir la ruta completa para guardar el reporte en la misma carpeta
     guardar_path = os.path.join(carpeta_archivo, nombre_reporte)
 
-    print(nombre_reporte)
-    print(guardar_path)
-    
     # Construir los datos del reporte
     media = np.mean(y_global)
     reporte = []
@@ -182,8 +170,8 @@ def guardar_reporte():
 def actualizar_setpoint():
     try:
         nuevo_setpoint = float(setpoint_entry.get())
-        encontrar_maximos(nuevo_setpoint, ax1)  # Actualizar también en la gráfica principal (ax1)
-        onselect(ax2.get_xlim()[0], ax2.get_xlim()[1])  # Actualizar en la gráfica ampliada (ax2)
+        encontrar_maximos(nuevo_setpoint, ax1)  
+        onselect(ax2.get_xlim()[0], ax2.get_xlim()[1])  
     except ValueError:
         messagebox.showerror("Error", "Ingrese un valor numérico válido para el setpoint.")
 
@@ -195,41 +183,31 @@ root.title("Generador de Gráficas")
 seleccionar_carpeta_button = tk.Button(root, text="Seleccionar Carpeta", command=seleccionar_carpeta)
 seleccionar_carpeta_button.pack()
 
-# Variable para almacenar la ruta de la carpeta seleccionada
 carpeta_var = tk.StringVar(root)
-
-# Variable para almacenar el archivo seleccionado
 archivo_var = tk.StringVar(root)
 
-# Crear una lista desplegable con los nombres de los archivos
 archivo_dropdown = tk.OptionMenu(root, archivo_var, "")
 archivo_dropdown.pack()
 
-# Crear un botón para cargar y mostrar los datos del archivo seleccionado
 cargar_button = tk.Button(root, text="Generar Gráfica", command=cargar_archivo)
 cargar_button.pack()
 
-# Crear un campo de entrada para el setpoint
 setpoint_label = tk.Label(root, text="Setpoint:")
 setpoint_label.pack()
 
 setpoint_entry = tk.Entry(root)
 setpoint_entry.pack()
 
-# Crear un botón para actualizar el setpoint
 actualizar_setpoint_button = tk.Button(root, text="Actualizar Setpoint", command=actualizar_setpoint)
 actualizar_setpoint_button.pack()
 
-# Crear un botón para generar el reporte
 generar_reporte_button = tk.Button(root, text="Generar Reporte", command=guardar_reporte)
 generar_reporte_button.pack()
 
-# Crear un lienzo para mostrar la gráfica generada
 fig = Figure(figsize=(18, 12))
 ax1 = fig.add_subplot(211)
 ax2 = fig.add_subplot(212)
 
-# Crear el lienzo de matplotlib
 canvas = FigureCanvasTkAgg(fig, master=root)
 canvas.draw()
 canvas.get_tk_widget().pack()

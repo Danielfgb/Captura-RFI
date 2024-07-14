@@ -166,15 +166,12 @@ def main(ruta_archivo, carpeta_salida, filas_por_grupo):
     Carga_Datos, parte_fecha = cargar_datos(ruta_archivo)
     Carga_Datos = tratar_datos(Carga_Datos)
     
-    # Obtener el directorio actual del programa
     directorio_actual = os.path.dirname(os.path.realpath(__file__))
     
-    # Crear carpeta "Salida" si no existe en el directorio actual
     carpeta_principal = os.path.join(directorio_actual, 'Salida')
     if not os.path.exists(carpeta_principal):
         os.makedirs(carpeta_principal)
 
-    # Definir la carpeta de salida completa
     carpeta_salida_completa = os.path.join(carpeta_principal, carpeta_salida + "_" + parte_fecha)
 
     dividir_y_guardar_grupos(Carga_Datos, carpeta_salida_completa)
@@ -191,7 +188,7 @@ if __name__ == "__main__":
         print("Uso: python Tratado_Datos.py <ruta_del_archivo_csv>")
         sys.exit(1)
 
-    ruta_archivo = sys.argv[1]  # Ruta del archivo CSV pasada como argumento
-    carpeta_salida = 'Muestra'  # Reemplaza con el nombre base de la carpeta de salida
-    filas_por_grupo = 1024  # Reemplaza con el número de filas por grupo
+    ruta_archivo = sys.argv[1]  # Ruta del archivo CSV pasada como argumento del ejecutable
+    carpeta_salida = 'Muestra'  #Nombre base de la carpeta de salida
+    filas_por_grupo = 1024  
     main(ruta_archivo, carpeta_salida, filas_por_grupo)
