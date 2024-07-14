@@ -6,9 +6,7 @@ venv/
 
 # Ignorar archivos de configuración específicos del entorno
 *.pyc
-__pycache__/
 *.pyo
 *.pyd
-
-# Ignorar archivos específicos de tu editor/IDE
+# Ignorar archivos visual
 .vscode/
