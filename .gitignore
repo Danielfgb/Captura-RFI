@@ -1,4 +1,4 @@
-#Ignorar archivos csv generados 
+#Ignorar archivos csv generados y cache de python
 Salida/**/*.csv
 __pycache__/
 # Ignorar el entorno virtual
