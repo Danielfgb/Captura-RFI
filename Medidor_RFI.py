@@ -41,12 +41,21 @@ class Application:
             else:
                 messagebox.showerror("Error", f"No se encontró el archivo {archivo_gnu_radio}")
 
-    def run_tratado_datos(self, ruta_archivo_csv, progress_queue):
+    def run_tratado_datos(self, ruta_archivo_csv, carpeta_salida):
         try:
-            Tratado_Datos.main(ruta_archivo_csv, 'Muestra', 1024)
-            progress_queue.put("Éxito")
+            # Obtener la carpeta donde se encuentra el archivo CSV
+            carpeta_entrada = os.path.dirname(ruta_archivo_csv)
+            
+            # Obtener nombre base del archivo sin extensión
+            nombre_archivo_base = os.path.splitext(os.path.basename(ruta_archivo_csv))[0]
+            
+            # Combinar carpeta de entrada con nombre de archivo base para la carpeta de salida
+            carpeta_salida_completa = os.path.join(carpeta_entrada, f'{carpeta_salida}_{nombre_archivo_base}')
+
+            Tratado_Datos.main(ruta_archivo_csv, carpeta_salida_completa, 1024)
+            self.progress_queue.put("Éxito")
         except Exception as e:
-            progress_queue.put(f"Error: {e}")
+            self.progress_queue.put(f"Error: {e}")
 
     def handle_progress(self):
         message = self.progress_queue.get()
@@ -84,7 +93,10 @@ class Application:
             self.progress_bar.pack(pady=10)
             self.progress_bar.start()
 
-            threading.Thread(target=self.run_tratado_datos, args=(ruta_archivo_csv, self.progress_queue)).start()
+            # Nombre base de la carpeta de salida
+            carpeta_salida = 'Muestra'
+
+            threading.Thread(target=self.run_tratado_datos, args=(ruta_archivo_csv, carpeta_salida)).start()
             self.check_progress()
 
     def check_progress(self):

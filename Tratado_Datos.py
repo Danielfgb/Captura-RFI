@@ -184,11 +184,12 @@ def main(ruta_archivo, carpeta_salida, filas_por_grupo):
     calcular_resultados(carpeta_salida_completa, parte_fecha)
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Uso: python Tratado_Datos.py <ruta_del_archivo_csv>")
+    if len(sys.argv) != 4:
+        print("Uso: python Tratado_Datos.py <ruta_del_archivo_csv> <carpeta_salida> <filas_por_grupo>")
         sys.exit(1)
 
     ruta_archivo = sys.argv[1]  # Ruta del archivo CSV pasada como argumento del ejecutable
-    carpeta_salida = 'Muestra'  #Nombre base de la carpeta de salida
-    filas_por_grupo = 1024  
+    carpeta_salida = sys.argv[2]  # Nombre base de la carpeta de salida
+    filas_por_grupo = int(sys.argv[3])  # Número de filas por grupo para la transposición
+
     main(ruta_archivo, carpeta_salida, filas_por_grupo)
