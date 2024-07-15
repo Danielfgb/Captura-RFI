@@ -1,5 +1,4 @@
-#Ignorar archivos csv generados y cache de python
-Salida/**/*.csv
+#Ignorar cache de python
 __pycache__/
 # Ignorar el entorno virtual
 venv/
