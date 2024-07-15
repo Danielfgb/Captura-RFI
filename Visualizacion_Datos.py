@@ -138,7 +138,7 @@ def guardar_reporte():
     
     nombre_base = os.path.basename(nombre_archivo)
     
-    # Construir el nombre del reporte con el formato deseado
+    # Construir el nombre del reporte 
     nombre_reporte = f"Reporte_{nombre_base}"
     
     carpeta_archivo = os.path.dirname(os.path.join(carpeta_var.get(), nombre_archivo))
@@ -175,11 +175,16 @@ def actualizar_setpoint():
     except ValueError:
         messagebox.showerror("Error", "Ingrese un valor numérico válido para el setpoint.")
 
-# Crear la ventana principal
 root = tk.Tk()
 root.title("Generador de Gráficas")
 
-# Crear un botón para seleccionar la carpeta de salida
+# Establecer el tamaño de la ventana
+ancho_ventana = 1000
+alto_ventana = 800
+posicion_x = (root.winfo_screenwidth() // 2) - (ancho_ventana // 2)
+posicion_y = (root.winfo_screenheight() // 2) - (alto_ventana // 2)
+root.geometry(f"{ancho_ventana}x{alto_ventana}+{posicion_x}+{posicion_y}")
+
 seleccionar_carpeta_button = tk.Button(root, text="Seleccionar Carpeta", command=seleccionar_carpeta)
 seleccionar_carpeta_button.pack()
 
