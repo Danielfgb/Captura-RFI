@@ -3,7 +3,6 @@ Salida/**/*.csv
 __pycache__/
 # Ignorar el entorno virtual
 venv/
-
 # Ignorar archivos de configuración específicos del entorno
 *.pyc
 *.pyo
