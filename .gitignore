@@ -1,4 +1,5 @@
-#Ignorar cache de python
+#Ignorar archivos csv generados y cache de python
+Salida/**/*.csv
 __pycache__/
 # Ignorar el entorno virtual
 venv/
@@ -8,3 +9,8 @@ venv/
 *.pyd
 # Ignorar archivos visual
 .vscode/
+# Ignorar archivos y carpetas generados por PyInstaller
+dist/
+build/
+Medidor_RFI.spec
+*.spec
