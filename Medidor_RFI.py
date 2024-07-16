@@ -9,24 +9,32 @@ from queue import Queue
 class Application:
     def __init__(self, root):
         self.root = root
-        self.root.title("Interfaz de Control")
+        self.root.title("Interfaz Medidor RFI")
 
         self.create_widgets()
 
     def create_widgets(self):
-        self.lbl_explicativo = Label(self.root, text="Esta interfaz permite controlar diferentes funciones:", justify="left", padx=10, pady=10)
+
+        texto_explicativo = """Esta interfaz permite controlar diferentes funciones:
+        - 'Instalar GNU Radio' inicia el instalador de GNU Radio 3.10.8.0 si no está instalado.
+        - Utiliza el botón 'Cargar Medidor de RF' para copiar el archivo Captura_RFI_1.0.grc a una carpeta seleccionada.
+        - El botón 'Post-procesamiento' organiza y procesa los datos del archivo CSV generado por el medidor de RFI.
+        - 'Visualización y Reporte' permite visualizar los datos procesados y generar un reporte con los datos relevantes.
+        """
+
+        self.lbl_explicativo = Label(self.root, text=texto_explicativo, justify="left", padx=10, pady=10)
         self.lbl_explicativo.pack()
 
-        self.btn_install_gnu = Button(self.root, text="Instalar GNU", command=self.install_gnu_radio)
+        self.btn_install_gnu = Button(self.root, text="Instalar GNU Radio", command=self.install_gnu_radio)
         self.btn_install_gnu.pack(pady=10)
 
-        self.btn_gnu = Button(self.root, text="GNU", command=self.run_gnu_radio)
+        self.btn_gnu = Button(self.root, text="Cargar Medidor de RF", command=self.run_gnu_radio)
         self.btn_gnu.pack(pady=10)
 
-        self.btn_tratado = Button(self.root, text="Pos-procesamiento", command=self.select_csv_and_run_tratado)
+        self.btn_tratado = Button(self.root, text="Post-procesamiento", command=self.select_csv_and_run_tratado)
         self.btn_tratado.pack(pady=10)
 
-        self.btn_visualizacion = Button(self.root, text="Visualización", command=self.run_visualizacion)
+        self.btn_visualizacion = Button(self.root, text="Visualización y Reporte", command=self.run_visualizacion)
         self.btn_visualizacion.pack(pady=10)
 
     def run_gnu_radio(self):
@@ -43,13 +51,9 @@ class Application:
 
     def run_tratado_datos(self, ruta_archivo_csv, carpeta_salida):
         try:
-            # Obtener la carpeta donde se encuentra el archivo CSV
-            carpeta_entrada = os.path.dirname(ruta_archivo_csv)
             
-            # Obtener nombre base del archivo sin extensión
+            carpeta_entrada = os.path.dirname(ruta_archivo_csv)       
             nombre_archivo_base = os.path.splitext(os.path.basename(ruta_archivo_csv))[0]
-            
-            # Combinar carpeta de entrada con nombre de archivo base para la carpeta de salida
             carpeta_salida_completa = os.path.join(carpeta_entrada, f'{carpeta_salida}_{nombre_archivo_base}')
 
             Tratado_Datos.main(ruta_archivo_csv, carpeta_salida_completa, 1024)
@@ -106,7 +110,7 @@ class Application:
             self.handle_progress()
 
     def run_visualizacion(self):
-        # Importa Visualizacion_Datos solo cuando se vaya a utilizar
+
         import Visualizacion_Datos
         Visualizacion_Datos.main()
 
