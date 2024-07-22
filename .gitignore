@@ -10,3 +10,8 @@ venv/
 *.pyd
 # Ignorar archivos visual
 .vscode/
+# Ignorar archivos y carpetas generados por PyInstaller
+dist/
+build/
+Medidor_RFI.spec
+*.spec
