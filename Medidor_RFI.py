@@ -3,6 +3,7 @@ import shutil
 import threading
 from tkinter import Tk, Button, Label, filedialog, messagebox, ttk
 import Tratado_Datos
+import Visualizacion_Datos
 import subprocess
 from queue import Queue
 
@@ -111,7 +112,6 @@ class Application:
 
     def run_visualizacion(self):
 
-        import Visualizacion_Datos
         Visualizacion_Datos.main()
 
     def install_gnu_radio(self):

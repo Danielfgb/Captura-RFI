@@ -19,8 +19,6 @@ def seleccionar_carpeta():
 # Función para cargar los archivos CSV de las subcarpetas
 def cargar_archivos_csv(carpeta):
     archivos_csv = []
-    regex_muestra = re.compile(r'^Muestra_.+')
-    regex_resultados = re.compile(r'^Resultado_.+')
 
     def buscar_archivos_csv(directorio):
         for root, dirs, files in os.walk(directorio):
@@ -46,8 +44,8 @@ def cargar_archivo():
     if archivo_seleccionado:
         df = pd.read_csv(os.path.join(carpeta, archivo_seleccionado))
         
-        x = df.columns[0]  
-        y = df.columns[1]  
+        x = df.columns[0]
+        y = df.columns[1]
         
         x = df[x].values
         y = df[y].values
@@ -69,10 +67,10 @@ def cargar_archivo():
         media = np.mean(y)
         media_str = f"{media:.3f} dB"
         
-        # Dibujar línea roja con el piso de ruido
+        # Limpiar la leyenda anterior y añadir la nueva
+        ax1.get_legend().remove() if ax1.get_legend() else None
         ax1.axhline(y=media, color='red', linestyle='--', label=f'Piso ruido: {media_str}')
-        
-        ax1.legend()  
+        ax1.legend(loc='upper right')  # Puedes ajustar la posición de la leyenda si lo deseas
         canvas.draw()
 
 # Función para manejar la selección de una región
@@ -89,10 +87,13 @@ def onselect(xmin, xmax):
         ax2.set_xlim(region_x[0], region_x[-1])
         ax2.set_ylim((region_y.min()-5), (region_y.max()+5))
         
-        # Mostrar los máximos sobre el setpoint 
-        setpoint = float(setpoint_entry.get())
-        encontrar_maximos(setpoint, ax2)
-        
+        setpoint_str = setpoint_entry.get()
+        if setpoint_str:
+            try:
+                setpoint = float(setpoint_str)
+                encontrar_maximos(setpoint, ax2)
+            except ValueError:
+                pass  # Si no es un número válido, solo ignorar
         canvas.draw()
 
 # Función para encontrar y mostrar máximos por encima de un setpoint
@@ -109,13 +110,26 @@ def encontrar_maximos(setpoint, axis):
     
     if maximos:
         x_maximos, y_maximos = zip(*maximos)
+        
+        # Limpiar la leyenda anterior y añadir los nuevos máximos
+        axis.get_legend().remove() if axis.get_legend() else None
         axis.plot(x_maximos, y_maximos, 'go', label=f'Máximos > {setpoint} dB')
-        axis.legend()
+        axis.legend(loc='upper right')  # Puedes ajustar la posición de la leyenda si lo deseas
         canvas.draw()
 
 # Función para guardar los máximos encontrados en un archivo CSV cuando se presiona "Generar Reporte"
 def guardar_reporte():
-    setpoint = float(setpoint_entry.get())
+    setpoint_str = setpoint_entry.get()
+    if not setpoint_str:
+        messagebox.showerror("Error", "El campo de setpoint está vacío. Por favor ingrese un valor numérico.")
+        return
+
+    try:
+        setpoint = float(setpoint_str)
+    except ValueError:
+        messagebox.showerror("Error", "Ingrese un valor numérico válido para el setpoint.")
+        return
+
     global x_global, y_global
     
     if len(x_global) == 0 or len(y_global) == 0:
@@ -151,7 +165,7 @@ def guardar_reporte():
     reporte.append(f"Piso de ruido: {media:.3f} dB")
     reporte.append(f"Setpoint: {setpoint} dB")
     reporte.append("Valores máximos por encima del setpoint:")
-    reporte.append("Frecuencia (MHz), dB")  # Encabezado de los valores máximos
+    reporte.append("Frecuencia (MHz), dB")
     
     for freq, db in maximos:
         reporte.append(f"{freq:.2f}, {db:.2f}")
@@ -165,70 +179,73 @@ def guardar_reporte():
     except Exception as e:
         messagebox.showerror("Error", f"No se pudo guardar el reporte.\nError: {str(e)}")
 
-
 # Función para actualizar el setpoint desde la interfaz gráfica
 def actualizar_setpoint():
     try:
         nuevo_setpoint = float(setpoint_entry.get())
-        encontrar_maximos(nuevo_setpoint, ax1)  
-        onselect(ax2.get_xlim()[0], ax2.get_xlim()[1])  
+        encontrar_maximos(nuevo_setpoint, ax1)
+        onselect(ax2.get_xlim()[0], ax2.get_xlim()[1])  # Actualizar gráfica de detalle
     except ValueError:
         messagebox.showerror("Error", "Ingrese un valor numérico válido para el setpoint.")
 
-root = tk.Tk()
-root.title("Generador de Gráficas")
+def main():
+    global root, carpeta_var, archivo_var, archivo_dropdown, ax1, ax2, canvas, x_global, y_global, setpoint_entry
 
-# Establecer el tamaño de la ventana
-ancho_ventana = 1000
-alto_ventana = 800
-posicion_x = (root.winfo_screenwidth() // 2) - (ancho_ventana // 2)
-posicion_y = (root.winfo_screenheight() // 2) - (alto_ventana // 2)
-root.geometry(f"{ancho_ventana}x{alto_ventana}+{posicion_x}+{posicion_y}")
+    root = tk.Tk()
+    root.title("Generador de Gráficas")
 
-seleccionar_carpeta_button = tk.Button(root, text="Seleccionar Carpeta", command=seleccionar_carpeta)
-seleccionar_carpeta_button.pack()
+    ancho_ventana = 1000
+    alto_ventana = 800
+    posicion_x = (root.winfo_screenwidth() // 2) - (ancho_ventana // 2)
+    posicion_y = (root.winfo_screenheight() // 2) - (alto_ventana // 2)
+    root.geometry(f"{ancho_ventana}x{alto_ventana}+{posicion_x}+{posicion_y}")
 
-carpeta_var = tk.StringVar(root)
-archivo_var = tk.StringVar(root)
+    seleccionar_carpeta_button = tk.Button(root, text="Seleccionar Carpeta", command=seleccionar_carpeta)
+    seleccionar_carpeta_button.pack()
 
-archivo_dropdown = tk.OptionMenu(root, archivo_var, "")
-archivo_dropdown.pack()
+    carpeta_var = tk.StringVar(root)
+    archivo_var = tk.StringVar(root)
 
-cargar_button = tk.Button(root, text="Generar Gráfica", command=cargar_archivo)
-cargar_button.pack()
+    archivo_dropdown = tk.OptionMenu(root, archivo_var, "")
+    archivo_dropdown.pack()
 
-setpoint_label = tk.Label(root, text="Setpoint:")
-setpoint_label.pack()
+    cargar_button = tk.Button(root, text="Generar Gráfica", command=cargar_archivo)
+    cargar_button.pack()
 
-setpoint_entry = tk.Entry(root)
-setpoint_entry.pack()
+    setpoint_label = tk.Label(root, text="Setpoint:")
+    setpoint_label.pack()
 
-actualizar_setpoint_button = tk.Button(root, text="Actualizar Setpoint", command=actualizar_setpoint)
-actualizar_setpoint_button.pack()
+    setpoint_entry = tk.Entry(root)
+    setpoint_entry.pack()
 
-generar_reporte_button = tk.Button(root, text="Generar Reporte", command=guardar_reporte)
-generar_reporte_button.pack()
+    actualizar_setpoint_button = tk.Button(root, text="Actualizar Setpoint", command=actualizar_setpoint)
+    actualizar_setpoint_button.pack()
 
-fig = Figure(figsize=(18, 12))
-ax1 = fig.add_subplot(211)
-ax2 = fig.add_subplot(212)
+    generar_reporte_button = tk.Button(root, text="Generar Reporte", command=guardar_reporte)
+    generar_reporte_button.pack()
 
-canvas = FigureCanvasTkAgg(fig, master=root)
-canvas.draw()
-canvas.get_tk_widget().pack()
+    fig = Figure(figsize=(18, 12))
+    ax1 = fig.add_subplot(211)
+    ax2 = fig.add_subplot(212)
 
-# Crear el selector de región
-span = SpanSelector(
-    ax1,
-    onselect,
-    "horizontal",
-    useblit=True,
-    props=dict(alpha=0.5, facecolor="tab:blue"),
-    interactive=True,
-    drag_from_anywhere=True
-)
+    canvas = FigureCanvasTkAgg(fig, master=root)
+    canvas.draw()
+    canvas.get_tk_widget().pack()
 
-x_global = []
-y_global = []
+    span = SpanSelector(
+        ax1,
+        onselect,
+        "horizontal",
+        useblit=True,
+        props=dict(alpha=0.5, facecolor="tab:blue"),
+        interactive=True,
+        drag_from_anywhere=True
+    )
 
-root.mainloop()
+    x_global = []
+    y_global = []
+
+    root.mainloop()
+
+if __name__ == "__main__":
+    main()
