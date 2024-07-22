@@ -57,7 +57,7 @@ def cargar_archivo():
         y_max = max(y) + 5
         
         ax1.set_ylim(y_min, y_max)
-        ax1.set_title(f'Archivo seleccionado: {archivo_seleccionado}')
+        ax1.set_title(f'Selected file: {archivo_seleccionado}')
         
         global x_global, y_global
         x_global = x
@@ -69,7 +69,7 @@ def cargar_archivo():
         
         # Limpiar la leyenda anterior y añadir la nueva
         ax1.get_legend().remove() if ax1.get_legend() else None
-        ax1.axhline(y=media, color='red', linestyle='--', label=f'Piso ruido: {media_str}')
+        ax1.axhline(y=media, color='red', linestyle='--', label=f'Noise floor: {media_str}')
         ax1.legend(loc='upper right')  # Puedes ajustar la posición de la leyenda si lo deseas
         canvas.draw()
 
@@ -113,7 +113,7 @@ def encontrar_maximos(setpoint, axis):
         
         # Limpiar la leyenda anterior y añadir los nuevos máximos
         axis.get_legend().remove() if axis.get_legend() else None
-        axis.plot(x_maximos, y_maximos, 'go', label=f'Máximos > {setpoint} dB')
+        axis.plot(x_maximos, y_maximos, 'go', label=f'Reference level > {setpoint} dB')
         axis.legend(loc='upper right')  # Puedes ajustar la posición de la leyenda si lo deseas
         canvas.draw()
 
@@ -121,19 +121,19 @@ def encontrar_maximos(setpoint, axis):
 def guardar_reporte():
     setpoint_str = setpoint_entry.get()
     if not setpoint_str:
-        messagebox.showerror("Error", "El campo de setpoint está vacío. Por favor ingrese un valor numérico.")
+        messagebox.showerror("Error", "The setpoint field is empty. Please enter a numeric value.")
         return
 
     try:
         setpoint = float(setpoint_str)
     except ValueError:
-        messagebox.showerror("Error", "Ingrese un valor numérico válido para el setpoint.")
+        messagebox.showerror("Error", "Please enter a valid numeric value for the setpoint.")
         return
 
     global x_global, y_global
     
     if len(x_global) == 0 or len(y_global) == 0:
-        messagebox.showerror("Error", "No hay datos para generar el reporte.")
+        messagebox.showerror("Error", "There is no data to generate the report.")
         return
     
     maximos = []
@@ -142,12 +142,12 @@ def guardar_reporte():
             maximos.append((x_global[i], valor))
     
     if not maximos:
-        messagebox.showinfo("Información", f"No se encontraron máximos sobre el setpoint {setpoint} dB.")
+        messagebox.showinfo("Information", f"No maximums were found above the setpoint {setpoint} dB.")
         return
     
     nombre_archivo = archivo_var.get()
     if not nombre_archivo:
-        messagebox.showerror("Error", "No se ha seleccionado ningún archivo.")
+        messagebox.showerror("Error", "No file has been selected.")
         return
     
     nombre_base = os.path.basename(nombre_archivo)
@@ -161,11 +161,11 @@ def guardar_reporte():
     # Construir los datos del reporte
     media = np.mean(y_global)
     reporte = []
-    reporte.append(f"Reporte del archivo: {nombre_archivo}")
-    reporte.append(f"Piso de ruido: {media:.3f} dB")
+    reporte.append(f"File Report: {nombre_archivo}")
+    reporte.append(f"Noise Floor: {media:.3f} dB")
     reporte.append(f"Setpoint: {setpoint} dB")
-    reporte.append("Valores máximos por encima del setpoint:")
-    reporte.append("Frecuencia (MHz), dB")
+    reporte.append("--- Maximum Values Above the Setpoint: ---")
+    reporte.append("Frequency (MHz), dB")
     
     for freq, db in maximos:
         reporte.append(f"{freq:.2f}, {db:.2f}")
@@ -175,9 +175,9 @@ def guardar_reporte():
             writer = csv.writer(file)
             for line in reporte:
                 writer.writerow([line])
-        messagebox.showinfo("Guardado", f"Reporte guardado exitosamente en:\n{guardar_path}")
+        messagebox.showinfo("Saved", f"Report successfully saved to:\n{guardar_path}")
     except Exception as e:
-        messagebox.showerror("Error", f"No se pudo guardar el reporte.\nError: {str(e)}")
+        messagebox.showerror("Error", f"The report could not be saved.\nError: {str(e)}")
 
 # Función para actualizar el setpoint desde la interfaz gráfica
 def actualizar_setpoint():
@@ -186,13 +186,13 @@ def actualizar_setpoint():
         encontrar_maximos(nuevo_setpoint, ax1)
         onselect(ax2.get_xlim()[0], ax2.get_xlim()[1])  # Actualizar gráfica de detalle
     except ValueError:
-        messagebox.showerror("Error", "Ingrese un valor numérico válido para el setpoint.")
+        messagebox.showerror("Error", "Please enter a valid numerical value for the setpoint.")
 
 def main():
     global root, carpeta_var, archivo_var, archivo_dropdown, ax1, ax2, canvas, x_global, y_global, setpoint_entry
 
     root = tk.Tk()
-    root.title("Generador de Gráficas")
+    root.title("Visualization and Report")
 
     ancho_ventana = 1000
     alto_ventana = 800
@@ -200,7 +200,7 @@ def main():
     posicion_y = (root.winfo_screenheight() // 2) - (alto_ventana // 2)
     root.geometry(f"{ancho_ventana}x{alto_ventana}+{posicion_x}+{posicion_y}")
 
-    seleccionar_carpeta_button = tk.Button(root, text="Seleccionar Carpeta", command=seleccionar_carpeta)
+    seleccionar_carpeta_button = tk.Button(root, text="Select Folder", command=seleccionar_carpeta)
     seleccionar_carpeta_button.pack()
 
     carpeta_var = tk.StringVar(root)
@@ -209,7 +209,7 @@ def main():
     archivo_dropdown = tk.OptionMenu(root, archivo_var, "")
     archivo_dropdown.pack()
 
-    cargar_button = tk.Button(root, text="Generar Gráfica", command=cargar_archivo)
+    cargar_button = tk.Button(root, text="Generate Graph", command=cargar_archivo)
     cargar_button.pack()
 
     setpoint_label = tk.Label(root, text="Setpoint:")
@@ -218,10 +218,10 @@ def main():
     setpoint_entry = tk.Entry(root)
     setpoint_entry.pack()
 
-    actualizar_setpoint_button = tk.Button(root, text="Actualizar Setpoint", command=actualizar_setpoint)
+    actualizar_setpoint_button = tk.Button(root, text="Update Setpoint", command=actualizar_setpoint)
     actualizar_setpoint_button.pack()
 
-    generar_reporte_button = tk.Button(root, text="Generar Reporte", command=guardar_reporte)
+    generar_reporte_button = tk.Button(root, text="Generate Report", command=guardar_reporte)
     generar_reporte_button.pack()
 
     fig = Figure(figsize=(18, 12))
