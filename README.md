@@ -41,6 +41,9 @@ Para usar el programa, es necesario tener instalado Python (preferiblemente vers
 
 Para usar el programa, lo único que se requiere es tener GNU Radio, preferiblemente versiones superiores a la 3.8. Desde la interfaz, puede instalar GNU Radio si no lo tiene, utilizando el botón **"Install GNU Radio"**. Luego, deberá cargar el flujo-grama creado para el medidor con el botón **"Load RF Meter"**. Seleccione la carpeta donde desea guardar este archivo .grc. Abra el programa llamado [**Captura_RFI.grc**](/Captura_RFI.grc). Al iniciar el programa correctamente, los demás códigos se generarán automáticamente: [**Captura_RFI.py**](/Captura_RFI.py), [**Captura_RFI_Control_Frecuencia.py**](/Captura_RFI_Control_Frecuencia.py) y [**Captura_RFI_CSV.py**](/Captura_RFI_CSV.py). 
 
+
+![Variable](./img/Captura_RFI.jpg)   
+
 1. Dentro del programa [Captura_RFI.grc](/Captura_RFI.grc) en la parte superior encontrara el apartado de variables en esté se encuentran cuatro variables que son las encargadas de configurar la adquisición de las señales RF, la variable samp_rate hace referencia al ancho de banda que tomara por cambio de frecuencia, como fue explicado, la variable frec_inicial y frec_final establecen en rango de frecuencia que sera analizado y la variable Intervalo_Tiempo se refiere al tiempo que analizara cada segmento antes de pasar a la siguiente frecuencia central.
 
     ![Variable](./img/Variables.png)
