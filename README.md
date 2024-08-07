@@ -48,7 +48,7 @@ Para usar el programa, lo único que se requiere es tener GNU Radio, preferiblem
 
     ![Variable](./img/Variables.png)
 
-2. Dentro del mismo flujograma de GNU-Radio encontrara un bloque con el nombre de CSV writer Block, dentro de este es necesario cambiar la ruta donde guardara el archivo csv con los datos analizados. 
+2. Dentro del mismo flujograma de GNU-Radio encontrara un bloque con el nombre de CSV writer Block, dentro de este podra cambair el nombre del archivo csv que se genera, este le seguirá "d-m-Y_H-M-S.csv". Este nombre incluye la fecha y hora (día, mes, año, hora, minuto y segundo). 
 
     ![csv](./img/bloc_csv.png)
 
